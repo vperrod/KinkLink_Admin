@@ -301,6 +301,7 @@ const PersonDetailsComp = ({
                   label="About Me"
                   value={personProfile?.aboutMe}
                   highlight
+                  renderHtml
                 />
                 <DetailItem
                   label="Hosting Status"
