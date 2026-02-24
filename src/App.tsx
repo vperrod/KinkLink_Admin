@@ -28,7 +28,7 @@ import EventManager from "./pages/Events/EventManager";
 import CommingSoon from "./pages/OtherPage/CommingSoon";
 import SystemIssueManage from "./pages/SystemIssues/SystemIssueManage";
 import UserVerificationPage from "./pages/Users/UserVerificationPage";
-
+import Analytics from "./pages/Analytics/Analytics";
 
 export default function App() {
   return (
@@ -49,7 +49,7 @@ export default function App() {
 
               {/* User Management */}
               {/* <Route path="/users/all" element={<AllUsersPage />} /> */}
-                 <Route path="/moderation" element={<AllUsersPage />} />
+              <Route path="/moderation" element={<AllUsersPage />} />
               <Route path="/verification" element={<UserVerificationPage />} />
               <Route path="/users/details/:id" element={<UserDetailsPage />} />
 
@@ -74,27 +74,27 @@ export default function App() {
 
               {/* Charts */}
               <Route path="/line-chart" element={<LineChart />} />
+              <Route path="/analytics" element={<Analytics />} />
               <Route path="/bar-chart" element={<BarChart />} />
-
             </Route>
           </Route>
-
 
           <Route path="/signin" element={<SignIn />} />
           <Route path="/reset-password" element={<ForgetPassword />} />
           <Route path="/verify-otp/:id" element={<OtpVerificationPage />} />
-          <Route path="/login-verify-otp/:id" element={<OtpVerificationPage />} />
-          <Route path="/change-password/:token" element={<ChangePasswordPage />} />
+          <Route
+            path="/login-verify-otp/:id"
+            element={<OtpVerificationPage />}
+          />
+          <Route
+            path="/change-password/:token"
+            element={<ChangePasswordPage />}
+          />
           <Route path="/coming-soon" element={<CommingSoon />} />
-
-
-
-
 
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
-
     </>
   );
 }

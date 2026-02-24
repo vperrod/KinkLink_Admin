@@ -1,4 +1,3 @@
-
 import MonthlySalesChart from "../../components/ecommerce/UserGrowthChart";
 import StatisticsChart from "../../components/ecommerce/PlatformActivity";
 import MonthlyTarget from "../../components/ecommerce/VerificationProgress";
@@ -12,8 +11,6 @@ import UserGrowthMini from "../../components/ecommerce/UserGrowthMini";
 import EngagementMetrics from "../../components/ecommerce/EngagementMetrics";
 import SystemStatus from "../../components/ecommerce/SystemStatus";
 import UserActivityChart from "../../components/ecommerce/ActiveChartsList";
-
-
 
 export default function Home() {
   return (
@@ -30,57 +27,51 @@ export default function Home() {
         </div>
 
         {/* Row 2: Two equal-width cards */}
-        <div className="col-span-12 xl:col-span-8">
+        {/* <div className="col-span-12 xl:col-span-8">
           <UserGrowthMini />
-        </div>
+        </div> */}
 
-        <div className="col-span-12 xl:col-span-4">
+        {/* <div className="col-span-12 xl:col-span-4">
           <UserFunnel />
-        </div>
+        </div> */}
 
         {/* Row 3: Full-width StatisticsChart */}
-        <div className="col-span-12 xl:col-span-4">
+        {/* <div className="col-span-12 xl:col-span-4">
           <TopCities />
 
-        </div>
+        </div> */}
 
         {/* Row 4: Two cards side by side */}
-        <div className="col-span-12 xl:col-span-4">
+        {/* <div className="col-span-12 xl:col-span-4">
           <EngagementMetrics />
         </div>
         <div className="col-span-12 xl:col-span-4">
           <UserActivityChart />
-        </div>
+        </div> */}
 
-        <div className="col-span-12 xl:col-span-5">
+        <div className="col-span-12 xl:col-span-6">
           <MonthlyTarget />
-
         </div>
         {/* Row 5: Funnel + User Growth */}
-        <div className="col-span-12 xl:col-span-7">
+        {/* <div className="col-span-12 xl:col-span-7">
           <MonthlySalesChart />
-        </div>
+        </div> */}
 
-        <div className="col-span-12 lg:col-span-7">
+        {/* <div className="col-span-12 lg:col-span-7">
           <StatisticsChart />
-        </div>
+        </div> */}
         {/* <div className="col-span-12 xl:col-span-5">
           <DemographicCard />
         </div> */}
         {/* Row 6: Top Cities */}
-        <div className="col-span-5">
+        <div className="col-span-12 xl:col-span-6">
           <SystemStatus />
-
-
         </div>
-
 
         {/* Row 7: Engagement Metrics */}
         <div className="col-span-12">
           <RecentOrders />
         </div>
-
-
       </div>
     </>
   );

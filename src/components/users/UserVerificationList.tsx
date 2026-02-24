@@ -44,8 +44,6 @@ const UserVerificationList = ({ status }: UserVerificationListProps) => {
   const [totalPages, setTotalPages] = useState(0);
   const limit = 10;
   const navigate = useNavigate();
-
-  // Fetch users
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {

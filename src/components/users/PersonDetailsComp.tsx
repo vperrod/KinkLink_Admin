@@ -108,21 +108,16 @@ const PersonDetailsComp = ({
       toast.error("Verification ID not found");
       return;
     }
-
-    // Loading state set karein
     setLoadingStates((prev) => ({ ...prev, [`reject-${type}`]: true }));
 
     try {
-      // API call (backend ko sahi type bhej rahe hain)
       await updateUserRegiStatusApi(
         user._id,
         verification._id,
         type,
-        "Rejected", // Backend enum ke mutabik "Rejected" (ensure case consistency)
+        "Rejected",
         reason,
       );
-
-      // Toast message ko user-friendly banayein
       const labelMap = {
         selfie: "Selfie",
         partnerSelfie: "Partner Selfie",
@@ -131,14 +126,11 @@ const PersonDetailsComp = ({
       };
 
       toast.success(`${labelMap[type]} rejected successfully`);
-
-      // UI update karne ke liye callback
       onUpdate();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || `Failed to reject ${type}`);
       throw err;
     } finally {
-      // Loading state off karein
       setLoadingStates((prev) => ({ ...prev, [`reject-${type}`]: false }));
     }
   };
@@ -238,7 +230,6 @@ const PersonDetailsComp = ({
       </div>
 
       <div className="w-full">
-        {/* User Information Card - Full Width */}
         <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">
@@ -285,14 +276,12 @@ const PersonDetailsComp = ({
           </div>
         </div>
 
-        {/* Person Profile & Details - Combined Section */}
         <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-6">
           <h2 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-5">
             Person Profile & Details
           </h2>
 
           <div className="space-y-6">
-            {/* Profile Image and Basic Info */}
             <div className="flex flex-col md:flex-row gap-6">
               {personProfile?.profileImg && (
                 <div className="flex-shrink-0">

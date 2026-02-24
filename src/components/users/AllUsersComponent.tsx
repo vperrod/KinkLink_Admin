@@ -321,8 +321,6 @@ import {
   TableRow,
 } from "../ui/table";
 import Pagination from "../ui/pagination/Pagination";
-
-// React Icons
 import {
   IoSearchOutline,
   IoChevronDownOutline,
@@ -346,7 +344,7 @@ const AllUsersComponent = () => {
   const navigate = useNavigate();
 
   const fetchUsers = useCallback(async () => {
-    if (activeTab !== "Users") return; // Only fetch if we are on Users tab
+    if (activeTab !== "Users") return;
     setLoading(true);
     try {
       const response = await getAllUsersApi({
@@ -377,7 +375,6 @@ const AllUsersComponent = () => {
 
   const totalPages = Math.ceil(totalUsers / limit);
 
-  // --- Reusable Empty State Component ---
   const EmptyState = ({ type }: { type: string }) => (
     <div className="flex flex-col items-center justify-center py-32 text-center">
       <div className="bg-gray-50 p-6 rounded-full mb-4">
@@ -399,7 +396,6 @@ const AllUsersComponent = () => {
 
   return (
     <div className="p-8 bg-[#F8FAFC] min-h-screen font-sans">
-      {/* SEARCH BAR */}
       <div className="relative mb-6 max-w-md">
         <IoSearchOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
         <input
@@ -411,7 +407,6 @@ const AllUsersComponent = () => {
         />
       </div>
 
-      {/* TABS */}
       <div className="flex bg-white rounded-2xl shadow-sm border border-gray-100 p-1 mb-8 w-fit overflow-hidden">
         {(["Users", "Content", "Comments"] as TabType[]).map((tab) => (
           <button
@@ -428,9 +423,7 @@ const AllUsersComponent = () => {
         ))}
       </div>
 
-      {/* MAIN CONTAINER */}
       <div className="bg-white rounded-[32px] shadow-sm border border-gray-50 overflow-hidden pb-4 min-h-[400px]">
-        {/* CONDITIONAL RENDERING BASED ON ACTIVE TAB */}
         {activeTab === "Users" ? (
           <>
             {loading ? (
@@ -522,7 +515,6 @@ const AllUsersComponent = () => {
                                 )}
                               </div>
 
-                              {/* USERNAME */}
                               <span className="text-[#374151] font-medium text-sm truncate max-w-[120px]">
                                 {displayName}
                               </span>
@@ -576,7 +568,6 @@ const AllUsersComponent = () => {
               </div>
             )}
 
-            {/* PAGINATION (Only for Users) */}
             {!loading && users.length > 0 && (
               <div className="mt-4">
                 <Pagination
@@ -590,7 +581,6 @@ const AllUsersComponent = () => {
             )}
           </>
         ) : (
-          /* SHOW EMPTY STATE FOR CONTENT OR COMMENTS */
           <EmptyState type={activeTab} />
         )}
       </div>
