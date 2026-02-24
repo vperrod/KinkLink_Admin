@@ -94,29 +94,45 @@ const PersonDetailsComp = ({
       setLoadingStates((prev) => ({ ...prev, [`approve-${type}`]: false }));
     }
   };
-
-  const handleReject = async (type: "selfie" | "id", reason: string) => {
+  const handleReject = async (
+    type: "selfie" | "id" | "partnerSelfie" | "partnerId",
+    reason: string,
+  ) => {
     if (!verification?._id) {
       toast.error("Verification ID not found");
       return;
     }
+
+    // Loading state set karein
     setLoadingStates((prev) => ({ ...prev, [`reject-${type}`]: true }));
+
     try {
+      // API call (backend ko sahi type bhej rahe hain)
       await updateUserRegiStatusApi(
         user._id,
         verification._id,
         type,
-        "Reject",
+        "Rejected", // Backend enum ke mutabik "Rejected" (ensure case consistency)
         reason,
       );
-      toast.success(
-        `${type === "selfie" ? "Selfie" : "ID"} rejected successfully`,
-      );
+
+      // Toast message ko user-friendly banayein
+      const labelMap = {
+        selfie: "Selfie",
+        partnerSelfie: "Partner Selfie",
+        id: "ID Card",
+        partnerId: "Partner ID Card",
+      };
+
+      toast.success(`${labelMap[type]} rejected successfully`);
+
+      // UI update karne ke liye callback
       onUpdate();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed");
+      toast.error(err?.response?.data?.message || `Failed to reject ${type}`);
       throw err;
     } finally {
+      // Loading state off karein
       setLoadingStates((prev) => ({ ...prev, [`reject-${type}`]: false }));
     }
   };
@@ -405,6 +421,7 @@ const PersonDetailsComp = ({
         </div>
 
         <VerificationSection
+          user={user}
           verification={verification}
           onApprove={handleApprove}
           onReject={handleReject}

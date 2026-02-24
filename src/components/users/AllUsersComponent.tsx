@@ -14,7 +14,6 @@
 // import Pagination from "../ui/pagination/Pagination";
 // import { getVerificationStatusColor } from "../../utils/statusUtils";
 
-
 // type TabType = "All" | "Person" | "Business";
 // const IMAGE_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/uploads/profileImage/`;
 
@@ -145,7 +144,6 @@
 //                     Profile
 //                   </TableCell>
 
-
 //                   <TableCell
 //                     isHeader
 //                     className="px-6 py-3 text-xs font-medium uppercase"
@@ -226,7 +224,6 @@
 //                       />
 //                     </TableCell>
 
-
 //                     <TableCell className="px-6 py-4 text-sm">
 //                       {user.email}
 //                     </TableCell>
@@ -249,7 +246,6 @@
 //                     <TableCell className="px-6 py-4 text-sm text-gray-500">
 //                       {user.registrationRole || "-"}
 //                     </TableCell>
-
 
 //                     <TableCell className="px-6 py-4 text-sm">
 //                       <span
@@ -327,7 +323,13 @@ import {
 import Pagination from "../ui/pagination/Pagination";
 
 // React Icons
-import { IoSearchOutline, IoChevronDownOutline, IoTriangle, IoFileTrayOutline, IoChatbubbleEllipsesOutline } from "react-icons/io5";
+import {
+  IoSearchOutline,
+  IoChevronDownOutline,
+  IoTriangle,
+  IoFileTrayOutline,
+  IoChatbubbleEllipsesOutline,
+} from "react-icons/io5";
 import { formatDistanceToNow } from "date-fns";
 
 type TabType = "Users" | "Content" | "Comments";
@@ -367,7 +369,8 @@ const AllUsersComponent = () => {
 
   const getStatusStyles = (status: string) => {
     const s = status?.toLowerCase();
-    if (s === "under review" || s === "verification requested") return "bg-[#FEF3C7] text-[#D97706]";
+    if (s === "under review" || s === "verification requested")
+      return "bg-[#FEF3C7] text-[#D97706]";
     if (s === "verified") return "bg-[#DCFCE7] text-[#16A34A]";
     return "bg-[#FEE2E2] text-[#EF4444]";
   };
@@ -384,16 +387,18 @@ const AllUsersComponent = () => {
           <IoChatbubbleEllipsesOutline className="text-5xl text-gray-300" />
         )}
       </div>
-      <h3 className="text-lg font-semibold text-gray-700">{type} Not Available</h3>
+      <h3 className="text-lg font-semibold text-gray-700">
+        {type} Not Available
+      </h3>
       <p className="text-gray-400 text-sm max-w-xs mx-auto">
-        There is currently no {type.toLowerCase()} data to display in this section.
+        There is currently no {type.toLowerCase()} data to display in this
+        section.
       </p>
     </div>
   );
 
   return (
     <div className="p-8 bg-[#F8FAFC] min-h-screen font-sans">
-      
       {/* SEARCH BAR */}
       <div className="relative mb-6 max-w-md">
         <IoSearchOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
@@ -413,7 +418,9 @@ const AllUsersComponent = () => {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-10 py-3 rounded-xl transition-all text-sm font-medium ${
-              activeTab === tab ? "bg-[#FEE2E2] text-[#B91C1C]" : "text-gray-500 hover:bg-gray-50"
+              activeTab === tab
+                ? "bg-[#FEE2E2] text-[#B91C1C]"
+                : "text-gray-500 hover:bg-gray-50"
             }`}
           >
             {tab}
@@ -423,25 +430,46 @@ const AllUsersComponent = () => {
 
       {/* MAIN CONTAINER */}
       <div className="bg-white rounded-[32px] shadow-sm border border-gray-50 overflow-hidden pb-4 min-h-[400px]">
-        
         {/* CONDITIONAL RENDERING BASED ON ACTIVE TAB */}
         {activeTab === "Users" ? (
           <>
             {loading ? (
-              <div className="flex justify-center py-20 italic text-gray-400">Loading users...</div>
+              <div className="flex justify-center py-20 italic text-gray-400">
+                Loading users...
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader className="bg-white border-b border-gray-50">
                     <TableRow className="hover:bg-transparent">
                       <TableCell className="w-16 px-6 py-5 text-center">
-                        <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-red-500" />
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 accent-red-500"
+                        />
                       </TableCell>
-                      {["Username", "Type", "Status", "Reason", "Reported by", "When", "Reports"].map((head) => (
-                        <TableCell key={head} isHeader className="px-4 py-5 text-[#6B7280] font-normal text-sm">
-                          <div className={`flex items-center gap-1 ${head === "Reports" ? "justify-end" : ""}`}>
+                      {[
+                        "Username",
+                        "Type",
+                        "Status",
+                        "Reason",
+                        "Reported by",
+                        "When",
+                        "Reports",
+                        "Note",
+                      ].map((head) => (
+                        <TableCell
+                          key={head}
+                          isHeader
+                          className="px-4 py-5 text-[#6B7280] font-normal text-sm"
+                        >
+                          <div
+                            className={`flex items-center gap-1 ${head === "Reports" ? "justify-end" : ""}`}
+                          >
                             {head}
-                            {head !== "When" && <IoChevronDownOutline className="text-gray-400" />}
+                            {head !== "When" && (
+                              <IoChevronDownOutline className="text-gray-400" />
+                            )}
                           </div>
                         </TableCell>
                       ))}
@@ -450,15 +478,18 @@ const AllUsersComponent = () => {
 
                   <TableBody>
                     {users.map((user, index) => {
-                      const displayName = user.role === "Business" 
-                        ? user.businessProfile?.businessName 
-                        : (user.username || user.name || "N/A");
-                      
-                      const profileImg = user.role === "Business"
-                        ? user.businessProfile?.profileImg
-                        : user.personProfile?.profileImg;
+                      const displayName =
+                        user.role === "Business"
+                          ? user.businessProfile?.businessName
+                          : user.username || user.name || "N/A";
 
-                      const status = user.verification?.overallStatus || "Unverified";
+                      const profileImg =
+                        user.role === "Business"
+                          ? user.businessProfile?.profileImg
+                          : user.personProfile?.profileImg;
+
+                      const status =
+                        user.verification?.overallStatus || "Unverified";
 
                       return (
                         <TableRow
@@ -469,39 +500,55 @@ const AllUsersComponent = () => {
                           }`}
                         >
                           <TableCell className="px-6 py-4 text-center">
-                            <input type="checkbox" className="w-4 h-4 rounded border-gray-300" />
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 rounded border-gray-300"
+                            />
                           </TableCell>
-                          
+
                           <TableCell className="px-4 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full bg-[#22D3EE] overflow-hidden">
+                              <div className="w-9 h-9 rounded-full bg-[#22D3EE] overflow-hidden flex items-center justify-center">
                                 {profileImg ? (
-                                  <img src={`${IMAGE_BASE_URL}${profileImg}`} alt="" className="w-full h-full object-cover" />
+                                  <img
+                                    src={`${IMAGE_BASE_URL}${profileImg}`}
+                                    alt={displayName}
+                                    className="w-full h-full object-cover"
+                                  />
                                 ) : (
-                                   <div className="w-full h-full flex items-center justify-center text-white text-[10px]">IMG</div>
+                                  <span className="text-white font-bold text-xs uppercase">
+                                    {displayName.substring(0, 2)}
+                                  </span>
                                 )}
                               </div>
+
+                              {/* USERNAME */}
                               <span className="text-[#374151] font-medium text-sm truncate max-w-[120px]">
-                                  {displayName}
+                                {displayName}
                               </span>
                             </div>
                           </TableCell>
-
-                          <TableCell className="px-4 py-4 text-[#4B5563] text-sm">{user.role}</TableCell>
+                          <TableCell className="px-4 py-4 text-[#4B5563] text-sm">
+                            {user.role}
+                          </TableCell>
 
                           <TableCell className="px-4 py-4">
-                            <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-tight ${getStatusStyles(status)}`}>
+                            <span
+                              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-tight ${getStatusStyles(status)}`}
+                            >
                               {status}
                             </span>
                           </TableCell>
 
                           <TableCell className="px-4 py-4">
-                             <span className="bg-[#FFEDD5] text-[#9A3412] px-3 py-1.5 rounded-lg text-[11px] font-bold">
-                               {user.registrationRole || "Other"}
-                             </span>
+                            <span className="bg-[#FFEDD5] text-[#9A3412] px-3 py-1.5 rounded-lg text-[11px] font-bold">
+                              {user.registrationRole || "Other"}
+                            </span>
                           </TableCell>
 
-                          <TableCell className="px-4 py-4 text-[#4B5563] text-sm">System</TableCell>
+                          <TableCell className="px-4 py-4 text-[#4B5563] text-sm">
+                            System
+                          </TableCell>
 
                           <TableCell className="px-4 py-4 text-[#9CA3AF] text-sm">
                             {formatDistanceToNow(new Date(user.createdAt))} ago
@@ -509,11 +556,17 @@ const AllUsersComponent = () => {
 
                           <TableCell className="px-4 py-4 pr-10">
                             <div className="flex items-center justify-end gap-2">
-                              <span className="text-[#374151] font-medium">{index === 2 ? 5 : 1}</span>
+                              <span className="text-[#374151] font-medium">
+                                {index === 2 ? 5 : 1}
+                              </span>
                               {index === 2 && (
                                 <IoTriangle className="text-[#EF4444] text-lg bg-[#FEE2E2] rounded p-0.5" />
                               )}
                             </div>
+                          </TableCell>
+
+                          <TableCell className="px-4 py-4 text-[#4B5563] text-sm">
+                            {user.adminNote ? user.adminNote : "Not Available"}
                           </TableCell>
                         </TableRow>
                       );
