@@ -1,4 +1,3 @@
-import React from "react";
 import TopCities from "../../components/ecommerce/TopCities";
 import StatisticsChart from "../../components/ecommerce/PlatformActivity";
 import UserFunnel from "../../components/ecommerce/UserFunnel";

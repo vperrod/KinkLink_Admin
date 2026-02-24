@@ -9,7 +9,6 @@ import {
   // CalenderIcon,
   ChatIcon,
   ChevronDownIcon,
-  DocsIcon,
   DollarLineIcon,
   GridIcon,
   HorizontaLDots,

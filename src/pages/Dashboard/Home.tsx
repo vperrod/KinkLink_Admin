@@ -1,16 +1,10 @@
-import MonthlySalesChart from "../../components/ecommerce/UserGrowthChart";
-import StatisticsChart from "../../components/ecommerce/PlatformActivity";
 import MonthlyTarget from "../../components/ecommerce/VerificationProgress";
 import RecentOrders from "../../components/ecommerce/RecentAdminActions";
 // import DemographicCard from "../../components/ecommerce/DemographicCard";
 import PageMeta from "../../components/common/PageMeta";
 import PhotoMetrics from "../../components/ecommerce/PhotoMetrics";
-import TopCities from "../../components/ecommerce/TopCities";
-import UserFunnel from "../../components/ecommerce/UserFunnel";
-import UserGrowthMini from "../../components/ecommerce/UserGrowthMini";
-import EngagementMetrics from "../../components/ecommerce/EngagementMetrics";
+
 import SystemStatus from "../../components/ecommerce/SystemStatus";
-import UserActivityChart from "../../components/ecommerce/ActiveChartsList";
 
 export default function Home() {
   return (
