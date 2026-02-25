@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { getUserVerificationsApi } from "../../api/usersapi";
 import { VerificationUser } from "../../types/user.types";
