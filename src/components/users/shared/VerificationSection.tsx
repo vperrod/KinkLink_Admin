@@ -709,7 +709,7 @@ const VerificationSection: React.FC<VerificationSectionProps> = ({
                 <DeleteButton type="selfie" />
                 <img
                   src={`${IMAGE_URL}/uploads/selfie/${verification.selfie.image}`}
-                  className="w-full h-80 md:h-[450px] object-contain bg-gray-200 dark:bg-black rounded-2xl cursor-pointer shadow-inner"
+                  className="w-full h-80 md:h-[440px] object-contain bg-gray-200 dark:bg-black rounded-2xl cursor-pointer shadow-inner"
                   onClick={() =>
                     onImageClick(
                       `${IMAGE_URL}/uploads/selfie/${verification.selfie.image}`,
