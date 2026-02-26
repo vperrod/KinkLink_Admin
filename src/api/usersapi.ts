@@ -85,7 +85,16 @@ export const deleteUserVerificationApi = async (
 
   return res.data;
 };
-
+export const deleteSpecificVerificationImageApi = async (
+  verificationId: string,
+  type: string,
+): Promise<any> => {
+  const res = await axiosInstance.post<any>(
+    `/api/admin/delete-verification-image/${verificationId}`,
+    { type },
+  );
+  return res.data;
+};
 export const getBlockedUsersApi = async (
   params: GetUsersParams,
 ): Promise<GetAllUsersResponse> => {

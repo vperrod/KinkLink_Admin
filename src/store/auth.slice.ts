@@ -12,10 +12,8 @@ export interface AuthState {
   error: string | null;
 }
 
-/* ================= HELPERS ================= */
 const getToken = () => localStorage.getItem("token");
 
-/* ================= STATE ================= */
 
 const initialState: AuthState = {
   token: getToken(),

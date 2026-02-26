@@ -12,6 +12,7 @@ import {
   updateUserVerificationNoteApi,
   adminRequestUserIdApi,
   varicationSuspend,
+  deleteSpecificVerificationImageApi,
 } from "../../api/usersapi";
 import { useNavigate } from "react-router";
 import DetailItem from "./shared/DetailItem";
@@ -74,7 +75,6 @@ const PersonDetailsComp = ({
       setLoading(false);
     }
   };
-
   const handleApprove = async (
     type: "selfie" | "id" | "partnerSelfie" | "partnerId",
   ) => {
@@ -82,7 +82,9 @@ const PersonDetailsComp = ({
       toast.error("Verification ID not found");
       return;
     }
+
     setLoadingStates((prev) => ({ ...prev, [`approve-${type}`]: true }));
+
     try {
       await updateUserRegiStatusApi(
         user._id,
@@ -90,9 +92,18 @@ const PersonDetailsComp = ({
         type,
         "Approve",
       );
-      toast.success(
-        `${type === "selfie" ? "Selfie" : "ID"} approved successfully`,
-      );
+
+      // 1. Label map banayein sahi naam dikhane ke liye
+      const labelMap = {
+        selfie: "Selfie",
+        partnerSelfie: "Partner Selfie",
+        id: "ID ",
+        partnerId: "Partner ID ",
+      };
+
+      // 2. Toast mein labelMap use karein
+      toast.success(`${labelMap[type]} approved successfully`);
+
       onUpdate();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed");
@@ -172,7 +183,27 @@ const PersonDetailsComp = ({
       setLoading(false);
     }
   };
+  const handleDeleteImage = async (
+    type: "selfie" | "id" | "partnerSelfie" | "partnerId",
+  ) => {
+    if (!verification?._id) {
+      toast.error("Verification ID not found");
+      return;
+    }
 
+    // Is specific image type ke liye loading start karein
+    setLoadingStates((prev) => ({ ...prev, [type]: true }));
+
+    try {
+      await deleteSpecificVerificationImageApi(verification._id, type);
+      toast.success("Image deleted successfully");
+      onUpdate(); // Data refresh karein
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to delete image");
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [type]: false }));
+    }
+  };
   const handleBlockToggle = async () => {
     setLoading(true);
     try {
@@ -421,6 +452,7 @@ const PersonDetailsComp = ({
           onApprove={handleApprove}
           onReject={handleReject}
           onDelete={handleDeleteVerification}
+          onDeleteImage={handleDeleteImage}
           onSuspend={handleVerficationSuspend}
           onRequestId={handleAdminRequestUserId}
           loadingStates={loadingStates}
