@@ -8,6 +8,7 @@ import {
   updateUserVerificationNoteApi,
   adminRequestUserIdApi,
   varicationSuspend,
+  deleteSpecificVerificationImageApi,
 } from "../../api/usersapi";
 import { useNavigate } from "react-router";
 import DetailItem from "./shared/DetailItem";
@@ -164,7 +165,27 @@ const BusinessDetailsComp = ({
       setLoading(false);
     }
   };
+  const handleDeleteImage = async (
+    type: "selfie" | "id" | "partnerSelfie" | "partnerId",
+  ) => {
+    if (!verification?._id) {
+      toast.error("Verification ID not found");
+      return;
+    }
 
+    // Is specific image type ke liye loading start karein
+    setLoadingStates((prev) => ({ ...prev, [type]: true }));
+
+    try {
+      await deleteSpecificVerificationImageApi(verification._id, type);
+      toast.success("Image deleted successfully");
+      onUpdate(); // Data refresh karein
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to delete image");
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [type]: false }));
+    }
+  };
   const handleBlockToggle = async () => {
     setLoading(true);
     try {
@@ -400,6 +421,7 @@ const BusinessDetailsComp = ({
           onReject={handleReject}
           onSuspend={handleVerficationSuspend}
           onDelete={handleDeleteVerification}
+          onDeleteImage={handleDeleteImage}
           onRequestId={handleAdminRequestUserId}
           loadingStates={loadingStates}
           loadingGlobal={loading}
