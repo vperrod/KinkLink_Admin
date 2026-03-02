@@ -18,6 +18,7 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoute";
 import ForgetPassword from "./pages/AuthPages/ForgetPassword";
 import OtpVerificationPage from "./pages/AuthPages/OtpVerification";
 import ChangePasswordPage from "./pages/AuthPages/ChangePassword";
@@ -29,8 +30,32 @@ import CommingSoon from "./pages/OtherPage/CommingSoon";
 import SystemIssueManage from "./pages/SystemIssues/SystemIssueManage";
 import UserVerificationPage from "./pages/Users/UserVerificationPage";
 import Analytics from "./pages/Analytics/Analytics";
+import { useEffect } from "react";
+import { useAppDispatch } from "./store/hooks";
+import { logout, setAuthSuccess } from "./store/auth.slice";
 
 export default function App() {
+  const dispatch = useAppDispatch();
+
+  // Multi-tab sync authentication
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      // If the 'token' key was updated
+      if (event.key === "token") {
+        if (!event.newValue) {
+          // Token removed in another tab
+          dispatch(logout());
+        } else {
+          // New token set in another tab
+          dispatch(setAuthSuccess({ token: event.newValue }));
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [dispatch]);
+
   return (
     <>
       <Router>
@@ -79,17 +104,20 @@ export default function App() {
             </Route>
           </Route>
 
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/reset-password" element={<ForgetPassword />} />
-          <Route path="/verify-otp/:id" element={<OtpVerificationPage />} />
-          <Route
-            path="/login-verify-otp/:id"
-            element={<OtpVerificationPage />}
-          />
-          <Route
-            path="/change-password/:token"
-            element={<ChangePasswordPage />}
-          />
+          <Route element={<PublicRoute />}>
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/reset-password" element={<ForgetPassword />} />
+            <Route path="/verify-otp/:id" element={<OtpVerificationPage />} />
+            <Route
+              path="/login-verify-otp/:id"
+              element={<OtpVerificationPage />}
+            />
+            <Route
+              path="/change-password/:token"
+              element={<ChangePasswordPage />}
+            />
+          </Route>
+
           <Route path="/coming-soon" element={<CommingSoon />} />
 
           <Route path="*" element={<NotFound />} />
