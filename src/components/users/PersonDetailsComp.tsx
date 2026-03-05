@@ -387,16 +387,17 @@ const PersonDetailsComp = ({
           <h2 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
             Interests
           </h2>
+          
           <div className="flex flex-wrap gap-2">
             {personProfile?.interests?.length ? (
-              personProfile.interests.map((interest: string) => (
-                <span
-                  key={interest}
-                  className="px-3 py-1.5 bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 rounded-full text-sm font-medium"
-                >
-                  {interest}
-                </span>
-              ))
+              personProfile.interests.map((interest: any) => (
+  <span
+    key={interest._id}
+    className="px-3 py-1.5 bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 rounded-full text-sm font-medium"
+  >
+    {interest.interestName}
+  </span>
+))
             ) : (
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 No interests listed

@@ -34,7 +34,7 @@ const DetailItem: React.FC<DetailItemProps> = ({
     return () => window.removeEventListener("resize", checkOverflow);
   }, [value, isExpanded]);
 
-  if (!value) return null;
+  if (value === null || value === undefined) return null;
 
   return (
     <div className="space-y-1 min-w-0">
@@ -62,7 +62,9 @@ const DetailItem: React.FC<DetailItemProps> = ({
                   : "text-gray-900 dark:text-white"
               } ${!isExpanded ? "line-clamp-3" : ""}`}
             >
-              {value.toString()}
+              {typeof value === "object"
+  ? JSON.stringify(value)
+  : value?.toString()}
             </p>
 
             {/* Button tabhi dikhega jab showSeeMore true ho */}
