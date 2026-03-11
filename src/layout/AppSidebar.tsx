@@ -22,6 +22,7 @@ import {
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import { usePermissions } from "../hooks/usePermissions";
 
 type NavItem = {
   name: string;
@@ -30,6 +31,7 @@ type NavItem = {
   subItems?: NavItem[];
   pro?: boolean;
   new?: boolean;
+  permission?: string;
 };
 
 const navItems: NavItem[] = [
@@ -37,114 +39,57 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     name: "Dashboard",
     path: "/",
+    permission: "view_dashboard",
   },
   {
-    icon: <PlugInIcon />, // Using UserCircleIcon as placeholder or reusable icon
+    icon: <PlugInIcon />,
     name: "System Issues",
     path: "/system-issues",
   },
   {
-    icon: <UserCircleIcon />, // Using UserCircleIcon as placeholder or reusable icon
+    icon: <UserCircleIcon />,
     name: "Verification",
     path: "/verification",
+    permission: "verification",
   },
   {
     icon: <AlertHexaIcon />,
     name: "Moderation",
     path: "/moderation",
     pro: false,
-    // subItems: [
-    //   {
-    //     name: "Users Management",
-    //     icon: <UserCircleIcon />,
-    //     subItems: [
-    //       { name: "All Users", path: "/users/all" },
-    //       // { name: "Pending Users", path: "/users/pending" },
-    //       // { name: "Blocked Users", path: "/users/blocked" },
-    //       // { name: "Rejected Users", path: "/users/reject" },
-    //       { name: "User Verification", path: "/users/verification" },
-    //     ],
-    //   },
-    //   {
-    //     name: "Content Management",
-    //     icon: <DocsIcon />,
-    //     subItems: [
-    //       { name: "Interest Management", path: "/interests" },
-    //       { name: "Photos & Bios", path: "/content/photos-bios" },
-    //       { name: "Posts & Forums", path: "/content/posts-forums" },
-    //       { name: "Flagged Content", path: "/content/flagged" },
-    //       { name: "Deletion Log", path: "/content/deletion-log" },
-    //     ],
-    //   },
-    // ],
+    permission: "user_verifications",
   },
   {
     icon: <ShootingStarIcon />,
     name: "All Interests",
     path: "/interests",
     pro: false,
-    // subItems: [
-    //   // Used ChatIcon as placeholder for Events/Calendar if CalenderIcon is commented out or re-imported
-    //   { name: "All Events", path: "/coming-soon", pro: false },
-    //   { name: "Reports", path: "/coming-soon", pro: false },
-    //   { name: "Cancellations", path: "/coming-soon", pro: false },
-    //   { name: "Compliance", path: "/coming-soon", pro: false },
-    //   { name: "Add & View Events", path: "/events", pro: false },
-    // ],
+    permission: "manage_interests",
   },
   {
     icon: <CalenderIcon />,
     name: "Events",
     path: "/events",
     pro: false,
-    // subItems: [
-    //   // Used ChatIcon as placeholder for Events/Calendar if CalenderIcon is commented out or re-imported
-    //   { name: "All Events", path: "/coming-soon", pro: false },
-    //   { name: "Reports", path: "/coming-soon", pro: false },
-    //   { name: "Cancellations", path: "/coming-soon", pro: false },
-    //   { name: "Compliance", path: "/coming-soon", pro: false },
-    //   { name: "Add & View Events", path: "/events", pro: false },
-    // ],
+    permission: "manage_events",
   },
   {
     icon: <ChatIcon />,
     name: "Messaging Control",
     path: "/coming-soon",
     pro: false,
-    // subItems: [
-    //   { name: "Flagged Messages", path: "/coming-soon", pro: false },
-    //   { name: "Alerts", path: "/coming-soon", pro: false },
-    //   { name: "Admin Messages", path: "/coming-soon", pro: false },
-    //   { name: "Broadcasts", path: "/coming-soon", pro: false },
-    // ],
   },
   {
     icon: <DollarLineIcon />,
     name: "Payments",
     path: "/payments/subscriptions",
     pro: false,
-    // subItems: [
-    //   { name: "Subscriptions", path: "/payments/subscriptions", pro: false },
-    //   { name: "Premium Users", path: "/payments/premium", pro: false },
-    //   { name: "Transactions", path: "/payments/transactions", pro: false },
-    //   { name: "Refunds", path: "/payments/refunds", pro: false },
-    // ],
   },
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Reports",
-  //   subItems: [
-  //     { name: "Inbox", path: "/reports/inbox", pro: false },
-  //     { name: "Actions", path: "/reports/actions", pro: false },
-  //     { name: "Resolution", path: "/reports/resolution", pro: false },
-  //     { name: "Escalations", path: "/reports/escalations", pro: false },
-  //   ],
-
-  // },
   {
     icon: <PieChartIcon />,
     name: "Analytics",
     path: "/analytics",
+    permission: "view_analytics",
   },
   {
     icon: <BoltIcon />,
@@ -155,6 +100,12 @@ const navItems: NavItem[] = [
     icon: <LockIcon />,
     name: "Audit Log",
     path: "/audit-log",
+  },
+  {
+    icon: <UserCircleIcon />,
+    name: "Sub-admins",
+    path: "/sub-admins",
+    permission: "create_subadmin",
   },
 ];
 
@@ -173,6 +124,7 @@ const othersItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { hasPermission } = usePermissions();
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(
     {},
@@ -229,6 +181,9 @@ const AppSidebar: React.FC = () => {
     return (
       <ul className={`flex flex-col ${level > 0 ? "gap-1 mt-1" : "gap-4"}`}>
         {items.map((nav) => {
+          // Check permission
+          if (nav.permission && !hasPermission(nav.permission)) return null;
+
           const isMenuOpen = expandedMenus[nav.name];
           const active = nav.path ? isActive(nav.path) : false;
           // Active if any child is active
@@ -247,24 +202,21 @@ const AppSidebar: React.FC = () => {
                 <div>
                   <button
                     onClick={() => handleToggle(nav.name)}
-                    className={`menu-item group w-full ${
-                      active || isChildActive
-                        ? "menu-item-active"
-                        : "menu-item-inactive"
-                    } cursor-pointer ${
-                      !isExpanded && !isHovered && level === 0
+                    className={`menu-item group w-full ${active || isChildActive
+                      ? "menu-item-active"
+                      : "menu-item-inactive"
+                      } cursor-pointer ${!isExpanded && !isHovered && level === 0
                         ? "lg:justify-center"
                         : "lg:justify-start"
-                    }`}
+                      }`}
                   >
                     {/* Only show icon for top level or if specified */}
                     {nav.icon && (
                       <span
-                        className={`menu-item-icon-size ${
-                          active || isChildActive
-                            ? "menu-item-active"
-                            : "menu-item-inactive"
-                        }`}
+                        className={`menu-item-icon-size ${active || isChildActive
+                          ? "menu-item-active"
+                          : "menu-item-inactive"
+                          }`}
                       >
                         {nav.icon}
                       </span>
@@ -278,20 +230,18 @@ const AppSidebar: React.FC = () => {
                           {nav.name}
                         </span>
                         <ChevronDownIcon
-                          className={`ml-auto w-5 h-5 transition-transform duration-200 ${
-                            isMenuOpen ? "rotate-180" : ""
-                          }`}
+                          className={`ml-auto w-5 h-5 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""
+                            }`}
                         />
                       </>
                     )}
                   </button>
                   {/* Submenu */}
                   <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      isMenuOpen
-                        ? "max-h-screen opacity-100"
-                        : "max-h-0 opacity-0"
-                    }`}
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen
+                      ? "max-h-screen opacity-100"
+                      : "max-h-0 opacity-0"
+                      }`}
                   >
                     {(isExpanded || isHovered || isMobileOpen) &&
                       renderNavItems(nav.subItems, level + 1)}
@@ -300,15 +250,13 @@ const AppSidebar: React.FC = () => {
               ) : (
                 <Link
                   to={nav.path || "#"}
-                  className={`menu-item group ${
-                    active ? "menu-item-active" : "menu-item-inactive"
-                  } ${!isExpanded && !isHovered && level === 0 ? "lg:justify-center" : "lg:justify-start"}`}
+                  className={`menu-item group ${active ? "menu-item-active" : "menu-item-inactive"
+                    } ${!isExpanded && !isHovered && level === 0 ? "lg:justify-center" : "lg:justify-start"}`}
                 >
                   {nav.icon && (
                     <span
-                      className={`menu-item-icon-size ${
-                        active ? "menu-item-active" : "menu-item-inactive"
-                      }`}
+                      className={`menu-item-icon-size ${active ? "menu-item-active" : "menu-item-inactive"
+                        }`}
                     >
                       {nav.icon}
                     </span>
@@ -338,12 +286,11 @@ const AppSidebar: React.FC = () => {
   return (
     <aside
       className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${
-          isExpanded || isMobileOpen
+        ${isExpanded || isMobileOpen
+          ? "w-[290px]"
+          : isHovered
             ? "w-[290px]"
-            : isHovered
-              ? "w-[290px]"
-              : "w-[90px]"
+            : "w-[90px]"
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
@@ -351,9 +298,8 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-center"
-        }`}
+        className={`py-8 flex ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-center"
+          }`}
       >
         <Link to="/">
           {isExpanded || isHovered || isMobileOpen ? (
@@ -390,11 +336,10 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                  ? "lg:justify-center"
+                  : "justify-start"
+                  }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Menu"

@@ -19,6 +19,7 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
+import PermissionRoute from "./routes/PermissionRoute";
 import ForgetPassword from "./pages/AuthPages/ForgetPassword";
 import OtpVerificationPage from "./pages/AuthPages/OtpVerification";
 import ChangePasswordPage from "./pages/AuthPages/ChangePassword";
@@ -30,6 +31,7 @@ import CommingSoon from "./pages/OtherPage/CommingSoon";
 import SystemIssueManage from "./pages/SystemIssues/SystemIssueManage";
 import UserVerificationPage from "./pages/Users/UserVerificationPage";
 import Analytics from "./pages/Analytics/Analytics";
+import SubAdminManagement from "./pages/Admin/SubAdminManagement";
 import { useEffect } from "react";
 import { useAppDispatch } from "./store/hooks";
 import { logout, setAuthSuccess } from "./store/auth.slice";
@@ -66,22 +68,38 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route path="/" index element={<Home />} />
 
+              {/* User Management */}
+              <Route element={<PermissionRoute permission="user_verifications" />}>
+                <Route path="/moderation" element={<AllUsersPage />} />
+                <Route path="/users/details/:id" element={<UserDetailsPage />} />
+              </Route>
+
+              <Route element={<PermissionRoute permission="verification" />}>
+                <Route path="/verification" element={<UserVerificationPage />} />
+              </Route>
+
+              {/* Interest Management */}
+              <Route element={<PermissionRoute permission="manage_interests" />}>
+                <Route path="/interests" element={<InterestManagementPage />} />
+              </Route>
+
+              <Route element={<PermissionRoute permission="manage_events" />}>
+                <Route path="/events" element={<EventManager />} />
+              </Route>
+              
+              <Route element={<PermissionRoute permission="view_analytics" />}>
+                 <Route path="/analytics" element={<Analytics />} />
+              </Route>
+
+              <Route element={<PermissionRoute permission="create_subadmin" />}>
+                <Route path="/sub-admins" element={<SubAdminManagement />} />
+              </Route>
+
               {/* Others Page */}
               <Route path="/profile" element={<UserProfiles />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/blank" element={<Blank />} />
               <Route path="/system-issues" element={<SystemIssueManage />} />
-
-              {/* User Management */}
-              {/* <Route path="/users/all" element={<AllUsersPage />} /> */}
-              <Route path="/moderation" element={<AllUsersPage />} />
-              <Route path="/verification" element={<UserVerificationPage />} />
-              <Route path="/users/details/:id" element={<UserDetailsPage />} />
-
-              {/* Interest Management */}
-              <Route path="/interests" element={<InterestManagementPage />} />
-
-              <Route path="/events" element={<EventManager />} />
 
               {/* Forms */}
               <Route path="/form-elements" element={<FormElements />} />
@@ -99,7 +117,6 @@ export default function App() {
 
               {/* Charts */}
               <Route path="/line-chart" element={<LineChart />} />
-              <Route path="/analytics" element={<Analytics />} />
               <Route path="/bar-chart" element={<BarChart />} />
             </Route>
           </Route>

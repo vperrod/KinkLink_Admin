@@ -38,4 +38,10 @@ export const API_ROUTES = {
     UPDATE_EVENT_TYPE: (id: string) => `api/admin/update-event-type/${id}`,
     DELETE_EVENT_TYPE: (id: string) => `api/admin/delete-event-type/${id}`,
   },
+  ADMIN: {
+    CREATE_SUBADMIN: "api/admin/create-subadmin",
+    GET_SUBADMINS: "api/admin/subadmins",
+    DELETE_SUBADMIN: (id: string) => `api/admin/delete-subadmin/${id}`,
+    UPDATE_SUBADMIN: (id: string) => `api/admin/update-subadmin/${id}`,
+  },
 };

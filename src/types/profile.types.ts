@@ -6,4 +6,5 @@ export interface Profile {
     email: string;
     phone: string;
     profileImage: string | null;
+    permissions?: string[];
 }

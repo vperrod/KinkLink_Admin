@@ -34,13 +34,13 @@ const Button: React.FC<ButtonProps> = ({
       "bg-brand-500 text-white shadow-theme-xs " +
       "hover:bg-white hover:text-brand-500 hover:ring-1 hover:ring-brand-500 " +
       "active:bg-brand-600 active:text-white " +
-      "disabled:bg-brand-300 disabled:text-white disabled:cursor-not-allowed",
+      "disabled:bg-brand-500 disabled:text-white disabled:cursor-not-allowed",
 
     outline:
       "bg-white text-brand-500 ring-1 ring-brand-500 " +
       "hover:bg-brand-500 hover:text-white " +
       "active:bg-brand-600 active:text-white " +
-      "disabled:bg-brand-300 disabled:text-white disabled:cursor-not-allowed",
+      "disabled:bg-brand-500 disabled:text-white disabled:cursor-not-allowed",
   };
 
   return (
