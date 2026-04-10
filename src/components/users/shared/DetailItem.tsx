@@ -1,0 +1,86 @@
+import React, { useEffect, useRef, useState } from "react";
+
+type DetailItemProps = {
+  label: string;
+  value?: string | number | null | boolean;
+  highlight?: boolean;
+  renderHtml?: boolean;
+};
+
+const DetailItem: React.FC<DetailItemProps> = ({
+  label,
+  value,
+  highlight = false,
+  renderHtml = false,
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showSeeMore, setShowSeeMore] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (textRef.current) {
+        const element = textRef.current;
+        if (element.scrollHeight > element.clientHeight) {
+          setShowSeeMore(true);
+        } else {
+          if (!isExpanded) setShowSeeMore(false);
+        }
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [value, isExpanded]);
+
+  if (value === null || value === undefined) return null;
+
+  return (
+    <div className="space-y-1 min-w-0">
+      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        {label}
+      </p>
+
+      <div className="relative">
+        {renderHtml ? (
+          <div
+            className={`text-sm font-medium break-words transition-all duration-300 ${
+              highlight
+                ? "text-brand-600 dark:text-brand-400"
+                : "text-gray-900 dark:text-white"
+            }`}
+            dangerouslySetInnerHTML={{ __html: value?.toString() || "" }}
+          />
+        ) : (
+          <>
+            <p
+              ref={textRef}
+              className={`text-sm font-medium break-words whitespace-pre-wrap transition-all duration-300 ${
+                highlight
+                  ? "text-brand-600 dark:text-brand-400"
+                  : "text-gray-900 dark:text-white"
+              } ${!isExpanded ? "line-clamp-3" : ""}`}
+            >
+              {typeof value === "object"
+  ? JSON.stringify(value)
+  : value?.toString()}
+            </p>
+
+            {/* Button tabhi dikhega jab showSeeMore true ho */}
+            {showSeeMore && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline mt-1 block"
+              >
+                {isExpanded ? "Show Less" : "See More"}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default DetailItem;
