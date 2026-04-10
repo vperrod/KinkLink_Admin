@@ -150,7 +150,6 @@ const InterestListComp = ({ refreshTrigger, onEdit }: InterestListCompProps) => 
                         </Table>
                     </div>
 
-                    {/* Pagination Controls */}
                     <div className="mt-6">
                         <Pagination
                             currentPage={currentPage}
