@@ -140,14 +140,12 @@ const AppSidebar: React.FC = () => {
     [location.pathname],
   );
 
-  // Auto-expand menus based on current path
   useEffect(() => {
     const newExpandedMenus: Record<string, boolean> = {};
 
     const checkActive = (items: NavItem[]) => {
       items.forEach((item) => {
         if (item.subItems) {
-          // Check if any child is active
           const hasActiveChild = item.subItems.some(
             (sub) =>
               (sub.path && isActive(sub.path)) ||
