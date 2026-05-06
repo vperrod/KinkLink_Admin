@@ -53,6 +53,12 @@ const navItems: NavItem[] = [
     permission: "verification",
   },
   {
+    icon: <UserCircleIcon />,
+    name: "Users",
+    path: "/users",
+    permission: "user_verifications",
+  },
+  {
     icon: <AlertHexaIcon />,
     name: "Moderation",
     path: "/moderation",

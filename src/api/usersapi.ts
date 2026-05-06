@@ -176,3 +176,40 @@ export const updateUserVerificationNoteApi = async (
   );
   return res.data;
 };
+
+export type GetAllReportsResponse = {
+  success: boolean;
+  data: any[];
+  pagination: {
+    page: number;
+    hasPrevious: boolean;
+    previous: number;
+    hasNext: boolean;
+    next: number;
+    totalPages: number;
+    totalCount?: number;
+  };
+};
+
+export const getAllReportsApi = async (
+  params: any,
+): Promise<GetAllReportsResponse> => {
+  const res = await axiosInstance.get<GetAllReportsResponse>(
+    API_ROUTES.USERS.GET_ALL_REPORTS,
+    { params },
+  );
+  return res.data;
+};
+
+export const takeReportActionApi = async (payload: {
+  reportId: string;
+  action: "Dismiss" | "Warning_1" | "Warning_2" | "Suspension" | "Permanent_Ban";
+  reason?: string;
+  suspensionDays?: number;
+}): Promise<UserActionResponse> => {
+  const res = await axiosInstance.post<UserActionResponse>(
+    API_ROUTES.USERS.TAKE_REPORT_ACTION,
+    payload,
+  );
+  return res.data;
+};

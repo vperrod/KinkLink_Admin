@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
+import ModerationPage from "./pages/Moderation/ModerationPage";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
@@ -68,9 +69,10 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route path="/" index element={<Home />} />
 
-              {/* User Management */}
+               {/* User Management */}
               <Route element={<PermissionRoute permission="user_verifications" />}>
-                <Route path="/moderation" element={<AllUsersPage />} />
+                <Route path="/users" element={<AllUsersPage />} />
+                <Route path="/moderation" element={<ModerationPage />} />
                 <Route path="/users/details/:id" element={<UserDetailsPage />} />
               </Route>
 

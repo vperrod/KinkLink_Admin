@@ -25,6 +25,8 @@ export const API_ROUTES = {
     BLOCK_UNBLOCK: (id: string) => `api/admin/block-unblock-user/${id}`,
     GET_REJECT: "api/admin/users-reject",
     BLOCKED_USERS: "api/admin/users-blocked",
+    GET_ALL_REPORTS: "api/admin/all-reports",
+    TAKE_REPORT_ACTION: "/api/report/report/take-action",
   },
   INTERESTS: {
     ADD: "api/admin/interest",
