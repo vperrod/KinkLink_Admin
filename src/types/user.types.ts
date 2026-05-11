@@ -247,3 +247,33 @@ export type GetUserVerificationsParams = {
     | "Under Review";
   search?: string;
 };
+
+export type ReportHistoryItem = {
+  _id: string;
+  targetUser: string;
+  adminId: string | null;
+  reportId: {
+    _id: string;
+    reportedBy: {
+      _id: string;
+      username: string;
+      name: string;
+    };
+    reason: string;
+    createdAt: string;
+  };
+  actionType: string;
+  reason: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+};
+
+export type ReportUserDetailResponse = {
+  success: boolean;
+  data: {
+    profile: any;
+    history: ReportHistoryItem[];
+  };
+};
+

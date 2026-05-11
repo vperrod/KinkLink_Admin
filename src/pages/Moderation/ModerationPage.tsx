@@ -33,11 +33,10 @@ const ModerationPage = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-10 py-3 rounded-xl transition-all text-sm font-medium ${
-              activeTab === tab
-                ? "bg-[#FEE2E2] text-[#B91C1C]"
-                : "text-gray-500 hover:bg-gray-50"
-            }`}
+            className={`px-10 py-3 rounded-xl transition-all text-sm font-medium ${activeTab === tab
+              ? "bg-[#FEE2E2] text-[#B91C1C]"
+              : "text-gray-500 hover:bg-gray-50"
+              }`}
           >
             {tab}
           </button>

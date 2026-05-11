@@ -7,6 +7,7 @@ import {
   UserDetailsResponse,
   GetUserVerificationsParams,
   GetUserVerificationsResponse,
+  ReportUserDetailResponse,
 } from "../types/user.types";
 
 /* ===================== API FUNCTIONS ===================== */
@@ -213,3 +214,13 @@ export const takeReportActionApi = async (payload: {
   );
   return res.data;
 };
+
+export const getReportUserDetailApi = async (
+  userId: string,
+): Promise<ReportUserDetailResponse> => {
+  const res = await axiosInstance.get<ReportUserDetailResponse>(
+    API_ROUTES.USERS.GET_REPORT_USER_DETAIL(userId),
+  );
+  return res.data;
+};
+

@@ -27,6 +27,7 @@ export const API_ROUTES = {
     BLOCKED_USERS: "api/admin/users-blocked",
     GET_ALL_REPORTS: "api/admin/all-reports",
     TAKE_REPORT_ACTION: "/api/report/report/take-action",
+    GET_REPORT_USER_DETAIL: (id: string) => `api/report/report-user-detail/${id}`,
   },
   INTERESTS: {
     ADD: "api/admin/interest",

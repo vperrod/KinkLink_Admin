@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { getAllReportsApi, takeReportActionApi } from "../../api/usersapi";
+import { getAllReportsApi, takeReportActionApi, getReportUserDetailApi } from "../../api/usersapi";
+import { ReportHistoryItem } from "../../types/user.types";
 import {
   Table,
   TableBody,
@@ -15,7 +17,16 @@ import {
   IoTriangle,
   IoCloseOutline,
 } from "react-icons/io5";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
+
+const getActionStyles = (action: string) => {
+  const a = action?.toLowerCase();
+  if (a?.includes("warning")) return "text-[#D97706] bg-[#FEF3C7]";
+  if (a?.includes("dismiss")) return "text-[#16A34A] bg-[#DCFCE7]";
+  if (a?.includes("suspension") || a?.includes("suspend")) return "text-[#EF4444] bg-[#FEE2E2]";
+  if (a?.includes("ban") || a?.includes("permanent") || a?.includes("delete")) return "text-white bg-[#374151]";
+  return "text-gray-600 bg-gray-100";
+};
 
 const IMAGE_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/uploads/profileImage/`;
 
@@ -32,6 +43,7 @@ const getReasonStyles = (reason: string) => {
 };
 
 const ReportedUsers = () => {
+  const navigate = useNavigate();
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,8 +54,30 @@ const ReportedUsers = () => {
   const [activePanelTab, setActivePanelTab] = useState<"Profile" | "Report">("Profile");
   const [suspensionDays, setSuspensionDays] = useState<number>(30);
   const [actionLoading, setActionLoading] = useState(false);
+  const [history, setHistory] = useState<ReportHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const limit = 10;
+
+  const fetchHistory = async (userId: string) => {
+    setHistoryLoading(true);
+    try {
+      const response = await getReportUserDetailApi(userId);
+      if (response.success) {
+        setHistory(response.data.history || []);
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch user history", error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedReport?.reportedUser?._id) {
+      fetchHistory(selectedReport.reportedUser._id);
+    }
+  }, [selectedReport]);
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -69,7 +103,7 @@ const ReportedUsers = () => {
     fetchReports();
   }, [fetchReports]);
 
-  const handleAction = async (action: "Dismiss" | "Warning_1" | "Warning_2" | "Suspension" | "Permanent_Ban") => {
+  const handleAction = async (action: "Dismiss" | "Warning_1" | "Warning_2" | "Suspension" | "Permanent_Ban", overrideDays?: number) => {
     if (!selectedReport) return;
 
     setActionLoading(true);
@@ -78,7 +112,7 @@ const ReportedUsers = () => {
         reportId: selectedReport._id,
         action,
         reason: selectedReport.reason,
-        suspensionDays: action === "Suspension" ? suspensionDays : undefined
+        suspensionDays: action === "Suspension" ? (overrideDays || suspensionDays) : undefined
       });
 
       if (response.success) {
@@ -183,7 +217,15 @@ const ReportedUsers = () => {
                               <div className="w-9 h-9 rounded-full bg-[#22D3EE] overflow-hidden flex items-center justify-center">
                                 {profileImg ? <img src={`${IMAGE_BASE_URL}${profileImg}`} alt={displayName} className="w-full h-full object-cover" /> : <span className="text-white font-bold text-xs uppercase">{String(displayName).substring(0, 2)}</span>}
                               </div>
-                              <span className="text-[#374151] font-medium text-sm truncate max-w-[120px]">{displayName}</span>
+                              <span
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/users/details/${user._id}`);
+                                }}
+                                className="text-[#374151] font-medium text-sm truncate max-w-[120px] hover:text-red-600 hover:underline cursor-pointer"
+                              >
+                                {displayName}
+                              </span>
                             </div>
                           </TableCell>
                           <TableCell className="px-4 py-4 text-[#4B5563] text-sm">{report.type || user.role || "User"}</TableCell>
@@ -230,9 +272,14 @@ const ReportedUsers = () => {
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">{selectedReport.reportedUser?.username || selectedReport.reportedUser?.name}</h3>
-                  <p className="text-gray-500 text-sm">Male</p>
-                  <p className="text-gray-400 text-xs mt-0.5">Created {formatDistanceToNow(new Date(selectedReport.reportedUser?.createdAt || Date.now()))} ago</p>
+                  <h3
+                    onClick={() => navigate(`/users/details/${selectedReport.reportedUser?._id}`)}
+                    className="text-lg font-bold text-gray-900 hover:text-red-600 hover:underline cursor-pointer transition-colors"
+                  >
+                    {selectedReport.reportedUser?.username || selectedReport.reportedUser?.name}
+                  </h3>
+                  <p className="text-gray-500 text-sm">{selectedReport.reportedUser?.registrationRole || selectedReport.reportedUser?.role || "User"}</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Created {selectedReport.reportedUser?.createdAt ? formatDistanceToNow(new Date(selectedReport.reportedUser.createdAt)) : "some time"} ago</p>
                 </div>
               </div>
               <button onClick={() => setSelectedReport(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400">
@@ -250,7 +297,7 @@ const ReportedUsers = () => {
                     }`}
                 >
                   {tab}
-                  {activePanelTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-500 rounded-full" />}
+                  {activePanelTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#B91C1C] rounded-full" />}
                 </button>
               ))}
             </div>
@@ -265,21 +312,32 @@ const ReportedUsers = () => {
                     <div className="text-right">Actions</div>
                   </div>
                   <div className="space-y-2">
-                    {[
-                      { reason: "Harassment", when: "29.12.25", action: "Warning 1", color: "text-[#D97706] bg-[#FEF3C7]" },
-                      { reason: "Other", when: "20.12.25", action: "Dismiss report", color: "text-[#16A34A] bg-[#DCFCE7]" }
-                    ].map((item, idx) => (
-                      <div key={idx} className="grid grid-cols-3 items-center p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                        <div className="text-sm text-gray-700 font-medium">{item.reason}</div>
-                        <div className="text-sm text-gray-500">{item.when}</div>
-                        <div className="text-right">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${item.color}`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${item.color.split(' ')[0].replace('text-', 'bg-')}`} />
-                            {item.action}
-                          </span>
-                        </div>
+                    {historyLoading ? (
+                      <div className="flex justify-center py-10">
+                        <div className="w-6 h-6 border-2 border-red-500 border-t-transparent animate-spin rounded-full" />
                       </div>
-                    ))}
+                    ) : history.length === 0 ? (
+                      <div className="text-center py-10 text-gray-400 text-sm italic">
+                        No previous admin actions recorded.
+                      </div>
+                    ) : (
+                      history.map((item) => (
+                        <div key={item._id} className="grid grid-cols-3 items-center p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
+                          <div className="text-sm text-gray-700 font-medium truncate pr-2" title={item.reason}>
+                            {item.reason || "N/A"}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {item.createdAt ? format(new Date(item.createdAt), "dd.MM.yy") : "-"}
+                          </div>
+                          <div className="text-right">
+                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${getActionStyles(item.actionType)}`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${getActionStyles(item.actionType).split(' ')[0].replace('text-', 'bg-')}`} />
+                              {item.actionType?.replace('_', ' ') || "Action"}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               ) : (
@@ -287,18 +345,23 @@ const ReportedUsers = () => {
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Reported by</p>
                     <div className="flex flex-wrap gap-2">
-                      {["username1", "username2", "username3", "username4", "username5"].map((u, i) => (
-                        <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100">
-                          <div className={`w-2 h-2 rounded-full ${['bg-[#22D3EE]', 'bg-[#16A34A]', 'bg-[#D97706]', 'bg-[#EF4444]', 'bg-[#8B5CF6]'][i]}`} />
-                          {u}
+                      {selectedReport.reportedBy ? (
+                        <span
+                          onClick={() => navigate(`/users/details/${selectedReport.reportedBy._id}`)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:text-red-600 hover:border-red-200 cursor-pointer transition-colors"
+                        >
+                          <div className="w-2 h-2 rounded-full bg-[#22D3EE]" />
+                          {selectedReport.reportedBy.username || selectedReport.reportedBy.name || "User"}
                         </span>
-                      ))}
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">Anonymous / System</span>
+                      )}
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Reason</p>
-                    <p className="text-[#D97706] font-bold">{selectedReport.reason}</p>
+                    <p className="text-[#D97706] font-bold">{selectedReport.reason || "Other"}</p>
                   </div>
 
                   <div className="space-y-2">
@@ -306,12 +369,19 @@ const ReportedUsers = () => {
                     <p className="text-gray-600 text-sm leading-relaxed">{selectedReport.message || "No additional comments provided."}</p>
                   </div>
 
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Attachment</p>
-                    <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-                      <img src="https://via.placeholder.com/150" alt="attachment" className="w-full h-full object-cover" />
+                  {selectedReport.image && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Attachment</p>
+                      <div className="w-full max-h-60 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                        <img
+                          src={`${IMAGE_BASE_URL}${selectedReport.image}`}
+                          alt="attachment"
+                          className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform"
+                          onClick={() => window.open(`${IMAGE_BASE_URL}${selectedReport.image}`, '_blank')}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -348,24 +418,29 @@ const ReportedUsers = () => {
                   </button>
                 </div>
                 <div className="flex gap-2">
-                  <select
-                    disabled={actionLoading}
-                    value={suspensionDays}
-                    onChange={(e) => setSuspensionDays(Number(e.target.value))}
-                    className="flex-1 bg-[#FEE2E2] text-[#EF4444] px-4 py-3 rounded-xl text-sm font-bold appearance-none outline-none cursor-pointer disabled:opacity-50"
-                  >
-                    <option value={1}>1 Day</option>
-                    <option value={7}>7 Days</option>
-                    <option value={30}>30 Days</option>
-                    <option value={90}>90 Days</option>
-                  </select>
-                  <button
-                    disabled={actionLoading}
-                    onClick={() => handleAction("Suspension")}
-                    className="flex-1 bg-[#EF4444] text-white py-3 rounded-xl text-sm font-bold hover:bg-red-700 transition-colors active:scale-95 disabled:opacity-50"
-                  >
-                    Suspend
-                  </button>
+                  <div className="flex-[2] relative">
+                    <select
+                      disabled={actionLoading}
+                      value=""
+                      onChange={(e) => {
+                        const days = Number(e.target.value);
+                        if (days) {
+                          setSuspensionDays(days);
+                          handleAction("Suspension", days);
+                        }
+                      }}
+                      className="w-full bg-[#F97572CC] text-white px-4 py-3 rounded-xl text-sm font-bold appearance-none outline-none cursor-pointer hover:bg-[#F97572] transition-colors disabled:opacity-50 text-center"
+                    >
+                      <option value="" disabled className="text-black">Suspend</option>
+                      <option value={1} className="text-black">1 Day</option>
+                      <option value={7} className="text-black">7 Days</option>
+                      <option value={30} className="text-black">30 Days</option>
+                      <option value={90} className="text-black">90 Days</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white">
+                      <IoChevronDownOutline size={16} />
+                    </div>
+                  </div>
                   <button
                     disabled={actionLoading}
                     onClick={() => handleAction("Permanent_Ban")}
