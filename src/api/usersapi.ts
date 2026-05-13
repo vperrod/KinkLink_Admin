@@ -204,7 +204,7 @@ export const getAllReportsApi = async (
 
 export const takeReportActionApi = async (payload: {
   reportId: string;
-  action: "Dismiss" | "Warning_1" | "Warning_2" | "Suspension" | "Permanent_Ban";
+  action: "Dismiss" | "Warning_1" | "Warning_2" | "Suspension" | "Permanent_Ban" | "Delete_Content";
   reason?: string;
   suspensionDays?: number;
 }): Promise<UserActionResponse> => {

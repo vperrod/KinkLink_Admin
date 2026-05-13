@@ -25,7 +25,17 @@ const getActionStyles = (action: string) => {
   if (a?.includes("dismiss")) return "text-[#16A34A] bg-[#DCFCE7]";
   if (a?.includes("suspension") || a?.includes("suspend")) return "text-[#EF4444] bg-[#FEE2E2]";
   if (a?.includes("ban") || a?.includes("permanent") || a?.includes("delete")) return "text-white bg-[#374151]";
+  if (a?.includes("delete_content")) return "text-[#EF4444] bg-[#FEE2E2]";
   return "text-gray-600 bg-gray-100";
+};
+
+const getTypeStyles = (type: string) => {
+  const t = type?.toLowerCase();
+  if (t === "user") return "text-blue-600 bg-blue-50 border-blue-100";
+  if (t === "media") return "text-purple-600 bg-purple-50 border-purple-100";
+  if (t === "post") return "text-pink-600 bg-pink-50 border-pink-100";
+  if (t === "comment") return "text-orange-600 bg-orange-50 border-orange-100";
+  return "text-gray-600 bg-gray-50 border-gray-100";
 };
 
 const IMAGE_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/uploads/profileImage/`;
@@ -42,7 +52,11 @@ const getReasonStyles = (reason: string) => {
   return "bg-[#F5F5F4] text-[#44403C]";
 };
 
-const ReportedUsers = () => {
+interface ReportedUsersProps {
+  filter?: "User" | "Content" | "Comment";
+}
+
+const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
   const navigate = useNavigate();
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -82,28 +96,63 @@ const ReportedUsers = () => {
   const fetchReports = useCallback(async () => {
     setLoading(true);
     try {
+      // Map filter to backend types
+      let typeParam = "";
+      if (filter === "User") {
+        typeParam = "User";
+      } else if (filter === "Comment") {
+        typeParam = "Comment";
+      }
+      // Note: We don't send typeParam for "Content" (Media/Post) because the 
+      // backend returns null for comma-separated values like "Media,Post".
+      // Instead, we fetch all and rely on the ultra-strict client-side filter below.
+
       const response = await getAllReportsApi({
         page: currentPage,
         limit,
         search: searchQuery,
+        ...(typeParam ? { type: typeParam } : {}),
       });
+
       if (response.success) {
-        setReports(response.data || []);
+        const rawReports = response.data || [];
+
+        // Apply ultra-strict filtering before setting state
+        const filteredData = rawReports.filter((report: any) => {
+          const rt = String(report.type || "").toLowerCase().trim();
+          const ft = String(filter || "User").toLowerCase().trim();
+
+          if (ft === "user") {
+            // Include if explicitly "user" OR if type is missing (default behavior)
+            return rt === "user" || rt === "";
+          }
+          if (ft === "content") {
+            return rt === "post" || rt === "media";
+          }
+          if (ft === "comment") {
+            return rt === "comment";
+          }
+          return false;
+        });
+
+        setReports(filteredData);
         setTotalPages(response.pagination.totalPages || 0);
-        setTotalItems(response.pagination.totalCount || (response.pagination.totalPages * limit));
+        // Adjust total items based on filtered result if backend returned extra
+        const adjustedTotal = (response.pagination.totalCount || (response.pagination.totalPages * limit));
+        setTotalItems(Math.min(adjustedTotal, filteredData.length + (currentPage - 1) * limit));
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to fetch reports");
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, filter, limit]);
 
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
 
-  const handleAction = async (action: "Dismiss" | "Warning_1" | "Warning_2" | "Suspension" | "Permanent_Ban", overrideDays?: number) => {
+  const handleAction = async (action: "Dismiss" | "Warning_1" | "Warning_2" | "Suspension" | "Permanent_Ban" | "Delete_Content", overrideDays?: number) => {
     if (!selectedReport) return;
 
     setActionLoading(true);
@@ -136,6 +185,9 @@ const ReportedUsers = () => {
     return "bg-[#FEE2E2] text-[#EF4444]";
   };
 
+  const reportType = String(selectedReport?.type || "").toLowerCase();
+  const isContentOrComment = ["media", "post", "comment"].includes(reportType);
+
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-start">
       {/* TABLE SECTION */}
@@ -144,7 +196,7 @@ const ReportedUsers = () => {
           <IoSearchOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
             type="text"
-            placeholder="Search reported users..."
+            placeholder={`Search reported ${filter.toLowerCase()}...`}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -157,20 +209,32 @@ const ReportedUsers = () => {
         <div className="bg-white rounded-[32px] shadow-sm border border-gray-50 overflow-hidden pb-4 min-h-[400px]">
           {loading ? (
             <div className="flex justify-center py-20 italic text-gray-400">
-              Loading reported users...
+              Loading reported {filter.toLowerCase()}...
             </div>
           ) : reports.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-32 text-center">
               <div className="bg-gray-50 p-6 rounded-full mb-4">
-                <svg className="text-5xl text-gray-300" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
+                {filter === "User" ? (
+                  <svg className="text-5xl text-gray-300" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                ) : filter === "Content" ? (
+                  <svg className="text-5xl text-gray-300" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                ) : (
+                  <svg className="text-5xl text-gray-300" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                )}
               </div>
-              <h3 className="text-lg font-semibold text-gray-700">No Reported Users</h3>
-              <p className="text-gray-400 text-sm max-w-xs mx-auto mt-2">There are currently no reported users to review.</p>
+              <h3 className="text-lg font-semibold text-gray-700">No Reported {filter}</h3>
+              <p className="text-gray-400 text-sm max-w-xs mx-auto mt-2">There are currently no reported {filter.toLowerCase()} to review.</p>
             </div>
           ) : (
             <>
@@ -228,7 +292,11 @@ const ReportedUsers = () => {
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="px-4 py-4 text-[#4B5563] text-sm">{report.type || user.role || "User"}</TableCell>
+                          <TableCell className="px-4 py-4">
+                            <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase border ${getTypeStyles(report.type || "User")}`}>
+                              {report.type || "User"}
+                            </span>
+                          </TableCell>
                           <TableCell className="px-4 py-4">
                             <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-tight ${getStatusStyles(status)}`}>{status}</span>
                           </TableCell>
@@ -276,10 +344,16 @@ const ReportedUsers = () => {
                     onClick={() => navigate(`/users/details/${selectedReport.reportedUser?._id}`)}
                     className="text-lg font-bold text-gray-900 hover:text-red-600 hover:underline cursor-pointer transition-colors"
                   >
-                    {selectedReport.reportedUser?.username || selectedReport.reportedUser?.name}
+                    {selectedReport.reportedUser?.username || selectedReport.reportedUser?.name || "Report Details"}
                   </h3>
-                  <p className="text-gray-500 text-sm">{selectedReport.reportedUser?.registrationRole || selectedReport.reportedUser?.role || "User"}</p>
-                  <p className="text-gray-400 text-xs mt-0.5">Created {selectedReport.reportedUser?.createdAt ? formatDistanceToNow(new Date(selectedReport.reportedUser.createdAt)) : "some time"} ago</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${getTypeStyles(selectedReport.type || "User")}`}>
+                      {selectedReport.type || "User"} Report
+                    </span>
+                    <span className="text-gray-400 text-xs">
+                      • Created {selectedReport.createdAt ? formatDistanceToNow(new Date(selectedReport.createdAt)) : "some time"} ago
+                    </span>
+                  </div>
                 </div>
               </div>
               <button onClick={() => setSelectedReport(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400">
@@ -417,6 +491,17 @@ const ReportedUsers = () => {
                     Warning 2
                   </button>
                 </div>
+
+                {isContentOrComment && (
+                  <button
+                    disabled={actionLoading}
+                    onClick={() => handleAction("Delete_Content")}
+                    className="w-full bg-[#FEE2E2] text-[#EF4444] py-3 rounded-xl text-sm font-bold hover:bg-[#FCA5A5] transition-colors active:scale-95 disabled:opacity-50 border border-[#FCA5A5]"
+                  >
+                    Delete Content
+                  </button>
+                )}
+
                 <div className="flex gap-2">
                   <div className="flex-[2] relative">
                     <select
