@@ -28,6 +28,7 @@ export const API_ROUTES = {
     GET_ALL_REPORTS: "api/admin/all-reports",
     TAKE_REPORT_ACTION: "/api/report/report/take-action",
     GET_REPORT_USER_DETAIL: (id: string) => `api/report/report-user-detail/${id}`,
+    GET_TARGET_USER_REPORT: (id: string) => `api/report/target-user-report/${id}`,
   },
   INTERESTS: {
     ADD: "api/admin/interest",

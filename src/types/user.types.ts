@@ -274,6 +274,13 @@ export type ReportUserDetailResponse = {
   data: {
     profile: any;
     history: ReportHistoryItem[];
+    reporters?: Array<{
+      userId: string;
+      username: string;
+      profileImg?: string;
+      reason?: string;
+      reportedAt?: string;
+    }>;
   };
 };
 

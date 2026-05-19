@@ -224,3 +224,12 @@ export const getReportUserDetailApi = async (
   return res.data;
 };
 
+export const getTargetUserReportApi = async (
+  userId: string,
+): Promise<any> => {
+  const res = await axiosInstance.get<any>(
+    API_ROUTES.USERS.GET_TARGET_USER_REPORT(userId),
+  );
+  return res.data;
+};
+

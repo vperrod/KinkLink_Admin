@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { getAllReportsApi, takeReportActionApi, getReportUserDetailApi } from "../../api/usersapi";
+import { getAllReportsApi, takeReportActionApi, getReportUserDetailApi, getTargetUserReportApi } from "../../api/usersapi";
 import { ReportHistoryItem } from "../../types/user.types";
 import {
   Table,
@@ -14,8 +14,9 @@ import Pagination from "../ui/pagination/Pagination";
 import {
   IoSearchOutline,
   IoChevronDownOutline,
-  IoTriangle,
+  IoWarningOutline,
   IoCloseOutline,
+  IoPerson,
 } from "react-icons/io5";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -39,6 +40,7 @@ const getTypeStyles = (type: string) => {
 };
 
 const IMAGE_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/uploads/profileImage/`;
+const REPORT_IMAGE_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/uploads/reportImg/`;
 
 const getReasonStyles = (reason: string) => {
   const r = reason?.toLowerCase();
@@ -70,6 +72,27 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [history, setHistory] = useState<ReportHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [reporters, setReporters] = useState<any[]>([]);
+  const [customReportDetails, setCustomReportDetails] = useState<any>(null);
+  const [customDetailsLoading, setCustomDetailsLoading] = useState(false);
+
+  const handleReporterClick = async (reporterUserId: string) => {
+    setCustomDetailsLoading(true);
+    try {
+      const response = await getTargetUserReportApi(reporterUserId);
+      if (response.success && response.data) {
+        setCustomReportDetails(response.data);
+        setActivePanelTab("Report");
+      } else {
+        toast.error("Failed to fetch report details for this user");
+      }
+    } catch (error: any) {
+      console.error("Error fetching reporter details:", error);
+      toast.error("Failed to load reporter details");
+    } finally {
+      setCustomDetailsLoading(false);
+    }
+  };
 
   const limit = 10;
 
@@ -79,6 +102,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
       const response = await getReportUserDetailApi(userId);
       if (response.success) {
         setHistory(response.data.history || []);
+        setReporters(response.data.reporters || []);
       }
     } catch (error: any) {
       console.error("Failed to fetch user history", error);
@@ -167,6 +191,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
       if (response.success) {
         toast.success(response.message);
         setSelectedReport(null);
+        setCustomReportDetails(null);
         fetchReports(); // Refresh list
       }
     } catch (error: any) {
@@ -189,9 +214,9 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
   const isContentOrComment = ["media", "post", "comment"].includes(reportType);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 items-start">
+    <div className="relative w-full">
       {/* TABLE SECTION */}
-      <div className={`space-y-6 transition-all duration-300 ${selectedReport ? 'lg:w-[65%]' : 'w-full'}`}>
+      <div className="space-y-6 w-full min-w-0">
         <div className="relative mb-6 max-w-md">
           <IoSearchOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
@@ -263,6 +288,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                       const displayName = user.role === "Business" ? user.businessProfile?.businessName || user.businessName || user.username || user.name || "N/A" : user.username || user.name || "N/A";
                       const profileImg = user.role === "Business" ? user.businessProfile?.profileImg : user.personProfile?.profileImg;
                       const status = report.status || user.verification?.overallStatus || user.status || "Pending";
+                      const totalReportCount = report.contentId?.totalReportCount || user.totalReportCount || report.totalReports || 1;
 
                       return (
                         <TableRow
@@ -270,6 +296,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                           onClick={() => {
                             setSelectedReport(report);
                             setActivePanelTab("Profile");
+                            setCustomReportDetails(null);
                           }}
                           className={`cursor-pointer border-b border-gray-50 last:border-0 transition-colors ${selectedReport?._id === report._id ? 'bg-red-50/30' : 'hover:bg-gray-50'}`}
                         >
@@ -307,8 +334,8 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                           <TableCell className="px-4 py-4 text-[#9CA3AF] text-sm">{report.createdAt ? `${formatDistanceToNow(new Date(report.createdAt))} ago` : "-"}</TableCell>
                           <TableCell className="px-4 py-4 pr-10">
                             <div className="flex items-center justify-end gap-2">
-                              <span className="text-[#374151] font-medium">{user.totalReportCount || 1}</span>
-                              {(user.totalReportCount > 3 || index === 2) && <IoTriangle className="text-[#EF4444] text-lg bg-[#FEE2E2] rounded p-0.5" />}
+                              <span className="text-[#374151] font-medium">{totalReportCount}</span>
+                              {(totalReportCount > 3 || index === 2) && <IoWarningOutline className="text-[#EF4444] text-lg bg-[#FEE2E2] rounded p-0.5" />}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -327,14 +354,21 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
         </div>
       </div>
 
-      {/* SIDE PANEL SECTION */}
+      {/* SIDE PANEL OVERLAY/DRAWER */}
       {selectedReport && (
-        <div className="w-full lg:w-[35%] animate-in slide-in-from-right duration-300">
-          <div className="bg-white rounded-[32px] shadow-lg border border-gray-100 overflow-hidden sticky top-8">
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/35 backdrop-blur-[2px] z-40 transition-opacity animate-in fade-in duration-200"
+            onClick={() => { setSelectedReport(null); setCustomReportDetails(null); }}
+          />
+
+          {/* Drawer Container */}
+          <div className="fixed inset-y-0 right-0 w-full max-w-md sm:max-w-lg bg-white shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300 border-l border-gray-100 h-screen">
             {/* Header */}
-            <div className="p-6 flex items-start justify-between">
+            <div className="p-6 flex items-start justify-between border-b border-gray-50 flex-shrink-0">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-[#22D3EE] overflow-hidden flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-[#22D3EE] overflow-hidden flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-lg uppercase">
                     {(selectedReport.reportedUser?.username || selectedReport.reportedUser?.name || "U")[0]}
                   </span>
@@ -356,17 +390,22 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                   </div>
                 </div>
               </div>
-              <button onClick={() => setSelectedReport(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400">
+              <button onClick={() => { setSelectedReport(null); setCustomReportDetails(null); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 flex-shrink-0">
                 <IoCloseOutline size={24} />
               </button>
             </div>
 
             {/* Tabs */}
-            <div className="px-6 flex border-b border-gray-100">
+            <div className="px-6 flex border-b border-gray-100 flex-shrink-0 bg-white">
               {["Profile", "Report"].map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActivePanelTab(tab as any)}
+                  onClick={() => {
+                    setActivePanelTab(tab as any);
+                    if (tab === "Report" && !customReportDetails && reporters.length > 0) {
+                      handleReporterClick(reporters[0].userId);
+                    }
+                  }}
                   className={`flex-1 py-4 text-sm font-medium transition-all relative ${activePanelTab === tab ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                     }`}
                 >
@@ -377,7 +416,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
             </div>
 
             {/* Panel Content */}
-            <div className="p-6 h-[450px] overflow-y-auto custom-scrollbar">
+            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
               {activePanelTab === "Profile" ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-3 text-xs font-medium text-gray-400 uppercase tracking-wider px-2">
@@ -419,13 +458,73 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Reported by</p>
                     <div className="flex flex-wrap gap-2">
-                      {selectedReport.reportedBy ? (
+                      {historyLoading ? (
+                        <span className="text-gray-400 text-xs italic animate-pulse">Loading reporters...</span>
+                      ) : reporters && reporters.length > 0 ? (
+                        reporters.map((reporter: any) => (
+                          <span
+                            key={reporter.userId}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 transition-colors"
+                          
+                          >
+                            <div
+                              onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/users/details/${reporter.userId}`);
+                              }}
+                              className="w-5 h-5 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:scale-110 active:scale-95 transition-transform flex-shrink-0 flex items-center justify-center border border-gray-300"
+                              title="View user details profile page"
+                            >
+                              {reporter.profileImg ? (
+                                <img
+                                  src={`${IMAGE_BASE_URL}${reporter.profileImg}`}
+                                  alt="profile"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <IoPerson className="text-gray-400 text-[10px]" />
+                              )}
+                            </div>
+                            <span
+                              onClick={() => handleReporterClick(reporter.userId)}
+                              className="cursor-pointer hover:text-red-600 hover:underline font-semibold"
+                            >
+                              {reporter.username || reporter.name || "User"}
+                            </span>
+                          </span>
+                        ))
+                      ) : selectedReport.reportedBy ? (
                         <span
-                          onClick={() => navigate(`/users/details/${selectedReport.reportedBy._id}`)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 hover:text-red-600 hover:border-red-200 cursor-pointer transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-full text-xs font-medium text-gray-700 border border-gray-100 transition-colors"
+                          title="Click username to view report, avatar to view profile"
                         >
-                          <div className="w-2 h-2 rounded-full bg-[#22D3EE]" />
-                          {selectedReport.reportedBy.username || selectedReport.reportedBy.name || "User"}
+                          <div
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/users/details/${selectedReport.reportedBy._id}`);
+                            }}
+                            className="w-5 h-5 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:scale-110 active:scale-95 transition-transform flex-shrink-0 flex items-center justify-center border border-gray-300"
+                            title="View user details profile page"
+                          >
+                            {(selectedReport.reportedBy.profileImg || selectedReport.reportedBy.profileImage || selectedReport.reportedBy.personProfile?.profileImg) ? (
+                              <img
+                                src={`${IMAGE_BASE_URL}${selectedReport.reportedBy.profileImg || selectedReport.reportedBy.profileImage || selectedReport.reportedBy.personProfile?.profileImg}`}
+                                alt="profile"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <IoPerson className="text-gray-400 text-[10px]" />
+                            )}
+                          </div>
+                          <span
+                            onClick={() => {
+                                setCustomReportDetails(null);
+                                setActivePanelTab("Report");
+                            }}
+                            className="cursor-pointer hover:text-red-600 hover:underline font-semibold"
+                          >
+                            {selectedReport.reportedBy.username || selectedReport.reportedBy.name || "User"}
+                          </span>
                         </span>
                       ) : (
                         <span className="text-gray-400 text-xs italic">Anonymous / System</span>
@@ -433,28 +532,117 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Reason</p>
-                    <p className="text-[#D97706] font-bold">{selectedReport.reason || "Other"}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Message</p>
-                    <p className="text-gray-600 text-sm leading-relaxed">{selectedReport.message || "No additional comments provided."}</p>
-                  </div>
-
-                  {selectedReport.image && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Attachment</p>
-                      <div className="w-full max-h-60 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-                        <img
-                          src={`${IMAGE_BASE_URL}${selectedReport.image}`}
-                          alt="attachment"
-                          className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform"
-                          onClick={() => window.open(`${IMAGE_BASE_URL}${selectedReport.image}`, '_blank')}
-                        />
-                      </div>
+                  {customDetailsLoading ? (
+                    <div className="flex flex-col items-center justify-center py-20 italic text-gray-400">
+                      <div className="w-8 h-8 border-4 border-red-500 border-t-transparent animate-spin rounded-full mb-3" />
+                      Loading report details...
                     </div>
+                  ) : (
+                    <>
+                      {customReportDetails && (
+                        <div className="flex items-center justify-end mb-3 border-b border-gray-100 pb-2">
+                          <span className="text-[10px] text-gray-400 font-semibold uppercase">
+                            {Array.isArray(customReportDetails) ? `${customReportDetails.length} reports` : '1 report'}
+                          </span>
+                        </div>
+                      )}
+
+                      {customReportDetails ? (
+                        Array.isArray(customReportDetails) ? (
+                          <div className="space-y-4">
+                            {customReportDetails.map((rep: any, idx: number) => {
+                              const details = rep.details || {};
+                              const attachment = details.reportImg || details.image;
+                              return (
+                                <div key={rep.reportId || idx} className="p-4 bg-gray-50 border border-gray-200/60 rounded-xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+                                  <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                    <span className="text-xs font-extrabold text-red-600 bg-red-50 px-2 py-0.5 rounded">Report #{idx + 1}</span>
+                                    {details.date && (
+                                      <span className="text-[10px] text-gray-400">
+                                        {format(new Date(details.date), 'MMM d, yyyy h:mm a')}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Reason</p>
+                                    <p className="text-[#D97706] font-bold text-sm uppercase">{details.reason || "Other"}</p>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Message</p>
+                                    <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{details.message || "No comments."}</p>
+                                  </div>
+                                  {attachment && (
+                                    <div className="space-y-1 mt-2">
+                                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Attachment</p>
+                                      <div className=" flex items-center ">
+                                        <img
+                                          src={`${REPORT_IMAGE_BASE_URL}${attachment}`}
+                                          alt="attachment"
+                                          className="w-10 object-contain cursor-pointer hover:scale-105 transition-transform"
+                                          onClick={() => window.open(`${REPORT_IMAGE_BASE_URL}${attachment}`, '_blank')}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Reason</p>
+                              <p className="text-[#D97706] font-bold">
+                                {customReportDetails.reason || "Other"}
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Message</p>
+                              <p className="text-gray-600 text-sm leading-relaxed">
+                                {customReportDetails.message || "No additional comments provided."}
+                              </p>
+                              {(customReportDetails.reportImg || customReportDetails.image) && (
+                                <div className="mt-3">
+                                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Attachment</p>
+                                  <div className="w-full max-h-60 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                                    <img
+                                      src={`${REPORT_IMAGE_BASE_URL}${customReportDetails.reportImg || customReportDetails.image}`}
+                                      alt="attachment"
+                                      className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform"
+                                      onClick={() => window.open(`${REPORT_IMAGE_BASE_URL}${customReportDetails.reportImg || customReportDetails.image}`, '_blank')}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Reason</p>
+                            <p className="text-[#D97706] font-bold">{selectedReport.reason || "Other"}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Message</p>
+                            <p className="text-gray-600 text-sm leading-relaxed">{selectedReport.message || "No additional comments provided."}</p>
+                            {(selectedReport.reportImg || selectedReport.image) && (
+                              <div className="mt-3">
+                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Attachment</p>
+                                <div className="w-full max-h-60 bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                                  <img
+                                    src={`${REPORT_IMAGE_BASE_URL}${selectedReport.reportImg || selectedReport.image}`}
+                                    alt="attachment"
+                                    className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform"
+                                    onClick={() => window.open(`${REPORT_IMAGE_BASE_URL}${selectedReport.reportImg || selectedReport.image}`, '_blank')}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -462,7 +650,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
 
             {/* Actions */}
             {activePanelTab === "Report" && (
-              <div className="p-6 bg-gray-50/50 border-t border-gray-100 space-y-4">
+              <div className="p-6 bg-gray-50 border-t border-gray-100 space-y-4 flex-shrink-0 relative">
                 {actionLoading && (
                   <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10">
                     <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent animate-spin rounded-full" />
@@ -537,7 +725,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
