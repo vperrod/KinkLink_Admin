@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getAllReportsApi, takeReportActionApi, getReportUserDetailApi, getTargetUserReportApi } from "../../api/usersapi";
+import ImageModal from "../users/shared/ImageModal";
 import { ReportHistoryItem } from "../../types/user.types";
 import {
   Table,
@@ -75,11 +76,13 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
   const [reporters, setReporters] = useState<any[]>([]);
   const [customReportDetails, setCustomReportDetails] = useState<any>(null);
   const [customDetailsLoading, setCustomDetailsLoading] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   const handleReporterClick = async (reporterUserId: string) => {
     setCustomDetailsLoading(true);
     try {
-      const response = await getTargetUserReportApi(reporterUserId);
+      const reportedUserId = selectedReport?.reportedUser?._id || "";
+      const response = await getTargetUserReportApi(reportedUserId, reporterUserId);
       if (response.success && response.data) {
         setCustomReportDetails(response.data);
         setActivePanelTab("Report");
@@ -579,7 +582,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                                           src={`${REPORT_IMAGE_BASE_URL}${attachment}`}
                                           alt="attachment"
                                           className="w-10 object-contain cursor-pointer hover:scale-105 transition-transform"
-                                          onClick={() => window.open(`${REPORT_IMAGE_BASE_URL}${attachment}`, '_blank')}
+                                          onClick={() => setPreviewImageUrl(`${REPORT_IMAGE_BASE_URL}${attachment}`)}
                                         />
                                       </div>
                                     </div>
@@ -609,7 +612,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                                       src={`${REPORT_IMAGE_BASE_URL}${customReportDetails.reportImg || customReportDetails.image}`}
                                       alt="attachment"
                                       className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform"
-                                      onClick={() => window.open(`${REPORT_IMAGE_BASE_URL}${customReportDetails.reportImg || customReportDetails.image}`, '_blank')}
+                                      onClick={() => setPreviewImageUrl(`${REPORT_IMAGE_BASE_URL}${customReportDetails.reportImg || customReportDetails.image}`)}
                                     />
                                   </div>
                                 </div>
@@ -634,7 +637,7 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
                                     src={`${REPORT_IMAGE_BASE_URL}${selectedReport.reportImg || selectedReport.image}`}
                                     alt="attachment"
                                     className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform"
-                                    onClick={() => window.open(`${REPORT_IMAGE_BASE_URL}${selectedReport.reportImg || selectedReport.image}`, '_blank')}
+                                    onClick={() => setPreviewImageUrl(`${REPORT_IMAGE_BASE_URL}${selectedReport.reportImg || selectedReport.image}`)}
                                   />
                                 </div>
                               </div>
@@ -726,6 +729,12 @@ const ReportedUsers = ({ filter = "User" }: ReportedUsersProps) => {
             )}
           </div>
         </>
+      )}
+      {previewImageUrl && (
+        <ImageModal
+          imageUrl={previewImageUrl}
+          onClose={() => setPreviewImageUrl(null)}
+        />
       )}
     </div>
   );
