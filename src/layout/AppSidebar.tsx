@@ -73,6 +73,13 @@ const navItems: NavItem[] = [
     permission: "manage_interests",
   },
   {
+    icon: <ChatIcon />,
+    name: "Forums Category",
+    path: "/forums-category",
+    pro: false,
+    permission: "manage_forums",
+  },
+  {
     icon: <CalenderIcon />,
     name: "Events",
     path: "/events",

@@ -157,12 +157,17 @@ export type VerificationUser = {
     _id: string;
     email: string;
     name: string;
+    username?: string;
     role: string;
     registrationRole: string;
     type: string;
     isVerified: boolean;
   };
   businessName: string;
+  businessProfile?: {
+    businessName?: string;
+    profileImg?: string;
+  };
   attempts: number;
   overallStatus:
     | "Approved"

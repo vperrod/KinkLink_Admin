@@ -36,6 +36,12 @@ export const API_ROUTES = {
     DELETE: (id: string) => `api/admin/delete-interest/${id}`,
     UPDATE: (id: string) => `api/admin/update-interest/${id}`,
   },
+  FORUMS: {
+    GET_LIST: "api/admin/get-forums-category",
+    ADD: "api/admin/create-forums-category",
+    UPDATE: (id: string) => `api/admin/update-forums-category/${id}`,
+    DELETE: (id: string) => `api/admin/delete-forums-category/${id}`,
+  },
   EVENT: {
     GET_EVENT_TYPE_LIST: "api/admin/event-type-list",
     ADD_EVENT_TYPE: "api/admin/event-type",

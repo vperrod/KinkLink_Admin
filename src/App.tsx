@@ -27,6 +27,7 @@ import ChangePasswordPage from "./pages/AuthPages/ChangePassword";
 import AllUsersPage from "./pages/Users/AllUsersPage";
 import UserDetailsPage from "./pages/Users/UserDetailsPage";
 import InterestManagementPage from "./pages/Interests/InterestManagementPage";
+import ForumsCategoryPage from "./pages/Forums/ForumsCategoryPage";
 import EventManager from "./pages/Events/EventManager";
 import CommingSoon from "./pages/OtherPage/CommingSoon";
 import SystemIssueManage from "./pages/SystemIssues/SystemIssueManage";
@@ -83,6 +84,11 @@ export default function App() {
               {/* Interest Management */}
               <Route element={<PermissionRoute permission="manage_interests" />}>
                 <Route path="/interests" element={<InterestManagementPage />} />
+              </Route>
+
+              {/* Forums Category Management */}
+              <Route element={<PermissionRoute permission="manage_forums" />}>
+                <Route path="/forums-category" element={<ForumsCategoryPage />} />
               </Route>
 
               <Route element={<PermissionRoute permission="manage_events" />}>
