@@ -4,7 +4,7 @@ import svgr from "vite-plugin-svgr";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/",
+  base: process.env.GITHUB_ACTIONS ? '/KinkLink_Admin/' : '/',
   plugins: [
     react(),
     svgr({
