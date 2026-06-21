@@ -1,0 +1,23 @@
+name: Sync from KinkLink25
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync upstream
+        run: |
+          git remote add upstream https://github.com/KinkLink25/KinkLink-Adminpanel.git
+          git fetch upstream main
+          git merge upstream/main --no-edit --allow-unrelated-histories || true
+          git push origin main
