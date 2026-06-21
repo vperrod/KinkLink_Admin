@@ -7,6 +7,7 @@ import {
   UserDetailsResponse,
   GetUserVerificationsParams,
   GetUserVerificationsResponse,
+  ReportUserDetailResponse,
 } from "../types/user.types";
 
 /* ===================== API FUNCTIONS ===================== */
@@ -176,3 +177,63 @@ export const updateUserVerificationNoteApi = async (
   );
   return res.data;
 };
+
+export type GetAllReportsResponse = {
+  success: boolean;
+  data: any[];
+  pagination: {
+    page: number;
+    hasPrevious: boolean;
+    previous: number;
+    hasNext: boolean;
+    next: number;
+    totalPages: number;
+    totalCount?: number;
+  };
+};
+
+export const getAllReportsApi = async (
+  params: any,
+): Promise<GetAllReportsResponse> => {
+  const res = await axiosInstance.get<GetAllReportsResponse>(
+    API_ROUTES.USERS.GET_ALL_REPORTS,
+    { params },
+  );
+  return res.data;
+};
+
+export const takeReportActionApi = async (payload: {
+  reportId: string;
+  action: "Dismiss" | "Warning_1" | "Warning_2" | "Suspension" | "Permanent_Ban" | "Delete_Content";
+  reason?: string;
+  suspensionDays?: number;
+}): Promise<UserActionResponse> => {
+  const res = await axiosInstance.post<UserActionResponse>(
+    API_ROUTES.USERS.TAKE_REPORT_ACTION,
+    payload,
+  );
+  return res.data;
+};
+
+export const getReportUserDetailApi = async (
+  userId: string,
+): Promise<ReportUserDetailResponse> => {
+  const res = await axiosInstance.get<ReportUserDetailResponse>(
+    API_ROUTES.USERS.GET_REPORT_USER_DETAIL(userId),
+  );
+  return res.data;
+};
+
+export const getTargetUserReportApi = async (
+  userId: string,
+  reporterId?: string,
+): Promise<any> => {
+  const res = await axiosInstance.get<any>(
+    API_ROUTES.USERS.GET_TARGET_USER_REPORT(userId),
+    {
+      params: reporterId ? { reporterId } : undefined,
+    },
+  );
+  return res.data;
+};
+

@@ -11,4 +11,5 @@ export const SUB_ADMIN_PERMISSIONS = [
   { key: "delete_interests", label: "Delete Interests" },
   { key: "manage_interests", label: "Manage Interests" },
   { key: "add_interests", label: "Add Interests" },
+  { key: "manage_forums", label: "Manage Forums" },
 ];

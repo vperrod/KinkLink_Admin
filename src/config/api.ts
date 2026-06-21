@@ -25,12 +25,22 @@ export const API_ROUTES = {
     BLOCK_UNBLOCK: (id: string) => `api/admin/block-unblock-user/${id}`,
     GET_REJECT: "api/admin/users-reject",
     BLOCKED_USERS: "api/admin/users-blocked",
+    GET_ALL_REPORTS: "api/admin/all-reports",
+    TAKE_REPORT_ACTION: "/api/report/report/take-action",
+    GET_REPORT_USER_DETAIL: (id: string) => `api/report/report-user-detail/${id}`,
+    GET_TARGET_USER_REPORT: (id: string) => `api/report/target-user-report/${id}`,
   },
   INTERESTS: {
     ADD: "api/admin/interest",
     GET_LIST: "api/admin/interest-list",
     DELETE: (id: string) => `api/admin/delete-interest/${id}`,
     UPDATE: (id: string) => `api/admin/update-interest/${id}`,
+  },
+  FORUMS: {
+    GET_LIST: "api/admin/get-forums-category",
+    ADD: "api/admin/create-forums-category",
+    UPDATE: (id: string) => `api/admin/update-forums-category/${id}`,
+    DELETE: (id: string) => `api/admin/delete-forums-category/${id}`,
   },
   EVENT: {
     GET_EVENT_TYPE_LIST: "api/admin/event-type-list",

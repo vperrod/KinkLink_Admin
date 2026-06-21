@@ -157,12 +157,17 @@ export type VerificationUser = {
     _id: string;
     email: string;
     name: string;
+    username?: string;
     role: string;
     registrationRole: string;
     type: string;
     isVerified: boolean;
   };
   businessName: string;
+  businessProfile?: {
+    businessName?: string;
+    profileImg?: string;
+  };
   attempts: number;
   overallStatus:
     | "Approved"
@@ -247,3 +252,40 @@ export type GetUserVerificationsParams = {
     | "Under Review";
   search?: string;
 };
+
+export type ReportHistoryItem = {
+  _id: string;
+  targetUser: string;
+  adminId: string | null;
+  reportId: {
+    _id: string;
+    reportedBy: {
+      _id: string;
+      username: string;
+      name: string;
+    };
+    reason: string;
+    createdAt: string;
+  };
+  actionType: string;
+  reason: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+};
+
+export type ReportUserDetailResponse = {
+  success: boolean;
+  data: {
+    profile: any;
+    history: ReportHistoryItem[];
+    reporters?: Array<{
+      userId: string;
+      username: string;
+      profileImg?: string;
+      reason?: string;
+      reportedAt?: string;
+    }>;
+  };
+};
+

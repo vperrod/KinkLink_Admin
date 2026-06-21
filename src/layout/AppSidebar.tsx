@@ -53,6 +53,12 @@ const navItems: NavItem[] = [
     permission: "verification",
   },
   {
+    icon: <UserCircleIcon />,
+    name: "Users",
+    path: "/users",
+    permission: "user_verifications",
+  },
+  {
     icon: <AlertHexaIcon />,
     name: "Moderation",
     path: "/moderation",
@@ -65,6 +71,13 @@ const navItems: NavItem[] = [
     path: "/interests",
     pro: false,
     permission: "manage_interests",
+  },
+  {
+    icon: <ChatIcon />,
+    name: "Forums Category",
+    path: "/forums-category",
+    pro: false,
+    permission: "manage_forums",
   },
   {
     icon: <CalenderIcon />,
@@ -140,14 +153,12 @@ const AppSidebar: React.FC = () => {
     [location.pathname],
   );
 
-  // Auto-expand menus based on current path
   useEffect(() => {
     const newExpandedMenus: Record<string, boolean> = {};
 
     const checkActive = (items: NavItem[]) => {
       items.forEach((item) => {
         if (item.subItems) {
-          // Check if any child is active
           const hasActiveChild = item.subItems.some(
             (sub) =>
               (sub.path && isActive(sub.path)) ||

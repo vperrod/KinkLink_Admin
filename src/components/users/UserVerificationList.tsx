@@ -153,28 +153,36 @@ const UserVerificationList = ({ status }: UserVerificationListProps) => {
             </TableHeader>
 
             <TableBody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {users.map((item) => (
-                <TableRow
-                  key={item._id}
-                  onClick={() => handleUserClick(item.user._id)}
-                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  <TableCell className="px-6 py-4">
-                    <Avatar
-                      src={
-                        getVerificationImage(item)
-                          ? `${IMAGE_BASE_URL}${getVerificationImage(item)}`
-                          : null
-                      }
-                      name={item.user?.name || item.user?.email}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-sm">
-                    {item.user.role === "Business"
-                      ? item.businessName || "-"
-                      : item.user.name || "-"}
-                  </TableCell>
+              {users.map((item) => {
+                const displayName =
+                  item.user.role === "Business"
+                    ? item.businessProfile?.businessName ||
+                      item.businessName ||
+                      item.user.username ||
+                      item.user.name ||
+                      "-"
+                    : item.user.name || item.user.username || "-";
+
+                return (
+                  <TableRow
+                    key={item._id}
+                    onClick={() => handleUserClick(item.user._id)}
+                    className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <TableCell className="px-6 py-4">
+                      <Avatar
+                        src={
+                          getVerificationImage(item)
+                            ? `${IMAGE_BASE_URL}${getVerificationImage(item)}`
+                            : null
+                        }
+                        name={displayName}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {displayName}
+                    </TableCell>
                   <TableCell className="px-6 py-4 text-sm">
                     {item.user.email}
                   </TableCell>
@@ -217,7 +225,8 @@ const UserVerificationList = ({ status }: UserVerificationListProps) => {
                     </button>
                   </TableCell>
                 </TableRow>
-              ))}
+              );
+            })}
             </TableBody>
           </Table>
         </div>

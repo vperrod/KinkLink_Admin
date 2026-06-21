@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
+import ModerationPage from "./pages/Moderation/ModerationPage";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
@@ -26,6 +27,7 @@ import ChangePasswordPage from "./pages/AuthPages/ChangePassword";
 import AllUsersPage from "./pages/Users/AllUsersPage";
 import UserDetailsPage from "./pages/Users/UserDetailsPage";
 import InterestManagementPage from "./pages/Interests/InterestManagementPage";
+import ForumsCategoryPage from "./pages/Forums/ForumsCategoryPage";
 import EventManager from "./pages/Events/EventManager";
 import CommingSoon from "./pages/OtherPage/CommingSoon";
 import SystemIssueManage from "./pages/SystemIssues/SystemIssueManage";
@@ -68,9 +70,10 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route path="/" index element={<Home />} />
 
-              {/* User Management */}
+               {/* User Management */}
               <Route element={<PermissionRoute permission="user_verifications" />}>
-                <Route path="/moderation" element={<AllUsersPage />} />
+                <Route path="/users" element={<AllUsersPage />} />
+                <Route path="/moderation" element={<ModerationPage />} />
                 <Route path="/users/details/:id" element={<UserDetailsPage />} />
               </Route>
 
@@ -81,6 +84,11 @@ export default function App() {
               {/* Interest Management */}
               <Route element={<PermissionRoute permission="manage_interests" />}>
                 <Route path="/interests" element={<InterestManagementPage />} />
+              </Route>
+
+              {/* Forums Category Management */}
+              <Route element={<PermissionRoute permission="manage_forums" />}>
+                <Route path="/forums-category" element={<ForumsCategoryPage />} />
               </Route>
 
               <Route element={<PermissionRoute permission="manage_events" />}>
