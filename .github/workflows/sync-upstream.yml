@@ -13,11 +13,11 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.SOURCE_PAT }}
 
       - name: Sync upstream
         run: |
-          git remote add upstream https://github.com/KinkLink25/KinkLink-Adminpanel.git
+          git remote add upstream https://x-access-token:${{ secrets.SOURCE_PAT }}@github.com/KinkLink25/KinkLink-Adminpanel.git
           git fetch upstream main
           git merge upstream/main --no-edit --allow-unrelated-histories || true
           git push origin main
